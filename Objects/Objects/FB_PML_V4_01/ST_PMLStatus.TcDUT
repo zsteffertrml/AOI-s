@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_PMLStatus" Id="{3213f29f-5f9d-4b37-b888-112a47899991}">
+    <Declaration><![CDATA[TYPE ST_PMLStatus :
+STRUCT
+	CommandRejected							: BOOL;							//Command Rejected
+	UnitModeCurrent							: DINT;							//0 = Invalid, 1 = Production, 2 = Maintenance, 3 = Manual, 4 = Batch Production
+	UnitModeRequested						: BOOL;							//Requested Unit Mode Change
+	UnitModeChangeInProcess					: BOOL;							//Requested Unit Mode Change In Progress
+	StateCurrent				AT	%Q*		: DINT;							//Current State Number
+	StateRequested							: DINT;							//Target State
+	StateChangeInProgress					: BOOL;							//State Change in Progress
+	StateChangeProgress						: DINT;							//Percent Complete
+	StateLastCompleted						: DINT;							//Last Completed State
+	SeqNumber								: DINT;							//Pack ML Sequence Number
+	CurMachspd								: DINT;							//Pack ML Current Machine Speed
+	MatReady								: ARRAY[0..31] OF BOOL;			//Material Ready
+	MatLow									: ARRAY[0..31] OF BOOL;			//Material Ready or Low
+	MachDesignSpeed							: REAL;							//Machine Design Speed
+	MachCycle								: DINT;							//Machine Cycle Count
+	ProdRatio								: DINT;							//Count of primary packages per secondary package
+	Dirty									: BOOL;							//Dirty indicator
+	Clean									: BOOL;							//Clean indicator
+	TimeToDirty								: DINT;							//Time remaining
+	EquipmentAllocatedToUnitModeID			: DINT;							//Machinery Unit mode allocation
+	MachineReusableForUnitModeID			: DINT;							//Resuable Unit Mode ID
+	MachineReusableTimeLeft					: DINT;							//Reusable Time
+	MachineStoringProductID					: DINT;							//Storing Product ID
+	MachineTransferringProductID			: DINT;							//Transferring Product ID
+	EquipmentInterLockBlocked 				: BOOL;							//Indicates that a downstream system is not able to accept product
+	EquipmentInterLockStarved				: BOOL;							//Indicates that an upstream system is not able to supply product
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

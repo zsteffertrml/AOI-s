@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_MoveSuperImposed_SP" Id="{da25678f-5c6d-47ac-90f4-135648720059}">
+    <Declaration><![CDATA[TYPE ST_MoveSuperImposed_SP :
+STRUCT
+	Distance			: REAL;					//Relative distance to catch up or fall back with the super imposed move
+	Velocity			: REAL := 50;			//Velocity Value of Move without move super imposed
+	VelocityDiff		: REAL := 50;			//Velocity Value of the catch up or fall back distance
+	Acceleration		: REAL := 1;			//Accleration Value of Move
+	Deceleration		: REAL := 1;			//Deceleration Value of Move
+	Length				: REAL;					//Length of the total move distance
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_Variable" Id="{d534504e-2387-4c6c-abc8-8011d3ef165a}">
+    <Declaration><![CDATA[TYPE ST_Variable :
+STRUCT
+	Value				:REAL;
+	Description			:STRING(100);
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

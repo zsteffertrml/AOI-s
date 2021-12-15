@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <DUT Name="ST_OEE_SP" Id="{5e863bfd-5e41-48ea-b145-33db5354ad3b}">
+    <Declaration><![CDATA[TYPE ST_OEE_SP :
+STRUCT
+	Start								: ST_TimeManagement;
+	Stop								: ST_TimeManagement;
+	Length								: ST_TimeManagement;
+	Operating_Time						: ST_TimeManagement;
+	Production_Time						: ST_TimeManagement;
+	Break_Time							: ST_TimeManagement;
+	SupplyDownTime_Time					: ST_TimeManagement;
+	OutfeedDownTime_Time				: ST_TimeManagement;
+	DownTime_Time						: ST_TimeManagement;			
+	StartConcate						: LINT;
+	StopConcate							: LINT;
+	Active								: BOOL;
+	ONS									: DINT;
+	Operating_Seconds					: REAL;
+	Production_Seconds					: REAL;
+	Planned_Production					: DINT;
+	StartStopConcate_Update				: BOOL;
+	Break_Active						: BOOL;
+	Break_Seconds						: DINT;
+	TargetRate							: REAL;
+	GoodPieces							: DINT;
+	RejectPieces						: DINT;
+	TotalPieces							: DINT;
+	Availability						: REAL;
+	Performance							: REAL;
+	Quality								: REAL;
+	OEE									: REAL;
+	StateCurrent						: DINT;		
+	MachinePerformance					: ARRAY[0..18] OF  ST_Performance_SP;
+	SupplyDownTime_Seconds		 		: REAL;
+	SupplyAvaliability					: REAL;
+	OutfeedDownTime_Seconds				: REAL;
+	OutfeedAvaliability					: REAL;
+	DownTime_Seconds					: DINT;
+	ShiftName							: STRING[22];
+	RisingEdge							: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

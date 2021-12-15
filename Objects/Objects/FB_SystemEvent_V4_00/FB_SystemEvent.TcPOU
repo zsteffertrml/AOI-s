@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_SystemEvent" Id="{c145d96a-3e91-45f3-a18f-80f040a4f6f7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FINAL FB_SystemEvent EXTENDS FB_EventLogger
+VAR_INPUT
+	Raise					: BOOL;	     				//Event Raiser
+	EventType				: E_EventType;				//Event Type Enum 
+	EventEntry				: TcEventEntry;				//Event Entry 
+	Arg0					: STRING := '';				//Event Argument {0}
+	Arg1					: STRING := '';				//Event Argument {1}
+	Arg2					: STRING := '';				//Event Argument {2}
+END_VAR
+VAR_IN_OUT
+	Control					: ST_System;				//Machine Control Instance
+END_VAR
+VAR           
+	_EventTimer_ET			: REAL;						//Event timer elapsed
+	_Alarm					: BOOL;						//Device Alarm
+	_Warning				: BOOL;						//Device Warning
+END_VAR
+VAR PERSISTENT
+	_AlarmMute				: BOOL;						//Event Mute
+	_EventTimer_PT			: REAL;						//Event timer preset time
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF NOT _AlarmMute AND NOT Control.Inputs.AlarmAck.Enabled THEN
+	IF Raise THEN
+		_EventTimer_ET :=  _EventTimer_ET + Control.SystemTime.ScanTime;
+	END_IF
+END_IF
+
+CASE EventType OF
+	E_EventType.eAlarm:
+		M_LogAlarm(Execute:= _EventTimer_ET > _EventTimer_PT , Arg0:= Arg0, Arg1:= Arg1, Arg2:= Arg2, EventEntry:= EventEntry,Clear:= NOT _Alarm, Message:= Control.Outputs.AlarmMessage);
+		IF _EventTimer_ET > _EventTimer_PT THEN
+			IF NOT Control.Outputs.Alarm THEN 
+				Control.Outputs.Alarm := TRUE;
+			END_IF		
+			_Alarm := TRUE;
+		END_IF
+	E_EventType.eWarning:
+		M_LogWarning(Execute:= _EventTimer_ET > _EventTimer_PT , Arg0:= Arg0, Arg1:= Arg1, Arg2:= Arg2, EventEntry:= EventEntry,Clear := NOT _Warning,Message:= Control.Outputs.WarningMessage);
+		IF _EventTimer_ET > _EventTimer_PT THEN
+			IF NOT Control.Outputs.Warning THEN 
+				Control.Outputs.Warning := TRUE;
+			END_IF		
+			_Warning := TRUE;
+		END_IF
+	E_EventType.eAlert:
+		M_LogAlert(Execute:= Raise, Arg0:= Arg0, Arg1:= Arg1, Arg2:= Arg2, EventEntry:= EventEntry, Message:= Control.Outputs.AlertMessage);
+		IF NOT Control.Outputs.Alert AND Raise THEN
+			Control.Outputs.Alert := TRUE;
+		END_IF
+	E_EventType.eMessage:
+		M_LogMessage(Execute:= Raise, Arg0:= Arg0, Arg1:= Arg1, Arg2:= Arg2, EventEntry:= EventEntry);
+	ELSE
+		RETURN;
+
+END_CASE
+
+IF NOT Raise  OR _AlarmMute OR Control.Inputs.AlarmAck.Enabled THEN
+	 _EventTimer_ET := 0;_Alarm := FALSE;_Warning := FALSE;
+END_IF
+
+
+]]></ST>
+    </Implementation>
+    <Property Name="Alarm" Id="{7708bd8f-23bd-4e4e-b0c3-dff049aa72f9}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Alarm : Bool]]></Declaration>
+      <Get Name="Get" Id="{f942402f-f875-4ab3-8029-85c3a58b4a8c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Alarm := _Alarm;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="AlarmMute" Id="{e633d145-59f8-44ee-8097-452d3869313d}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC AlarmMute : BOOL]]></Declaration>
+      <Set Name="Set" Id="{f0f3aa87-bffc-4a45-b2ad-7af035050a29}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[AlarmMute := _AlarmMute;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="EventTimer_ET" Id="{ba85efe3-bf77-4ce9-b51c-faf44194650f}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC EventTimer_ET : real]]></Declaration>
+      <Get Name="Get" Id="{65018f71-d8a2-454d-896e-4f4d948fa3f5}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EventTimer_ET := _EventTimer_ET;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="EventTimer_PT" Id="{d78a4612-36c8-4fd4-b744-c20aca951619}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC EventTimer_PT : real]]></Declaration>
+      <Get Name="Get" Id="{ff604f1e-1b15-47d5-a466-7fb31c99ff91}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[EventTimer_PT := _EventTimer_PT;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{e95157f9-6d51-45ab-b59a-9da1695f28c0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_EventTimer_PT := EventTimer_PT;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Warning" Id="{4525ad36-95fa-4e77-9aad-f6596211ab76}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Warning : Bool]]></Declaration>
+      <Get Name="Get" Id="{88ac7baa-81b9-4ee6-b0c9-3b978aa092c3}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Warning := _Warning;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_SystemEvent">
+      <LineId Id="3" Count="3" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="360" Count="4" />
+      <LineId Id="386" Count="0" />
+      <LineId Id="365" Count="1" />
+      <LineId Id="388" Count="0" />
+      <LineId Id="387" Count="0" />
+      <LineId Id="368" Count="1" />
+      <LineId Id="389" Count="4" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="374" Count="6" />
+      <LineId Id="414" Count="1" />
+      <LineId Id="381" Count="0" />
+      <LineId Id="359" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SystemEvent.Alarm.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SystemEvent.AlarmMute.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SystemEvent.EventTimer_ET.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SystemEvent.EventTimer_PT.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SystemEvent.EventTimer_PT.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SystemEvent.Warning.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

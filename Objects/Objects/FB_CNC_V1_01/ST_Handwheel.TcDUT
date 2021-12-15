@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_Handwheel" Id="{57dec6d1-7fee-4989-8644-2daa704d6f27}">
+    <Declaration><![CDATA[TYPE ST_Handwheel :
+STRUCT
+	xAxisSelect		AT %I*		: BOOL;
+	yAxisSelect		AT %I*		: BOOL;
+	zAxisSelect		AT %I*		: BOOL;
+	aAxisSelect		AT %I*		: BOOL;
+	cAxisSelect		AT %I*		: BOOL;
+	x10Resolution	AT %I*		: BOOL;
+	x100Resolution	AT %I*		: BOOL;
+	Handwheel 		AT %I*		: UINT;		//Increments for handwheel e.g. EL5101
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

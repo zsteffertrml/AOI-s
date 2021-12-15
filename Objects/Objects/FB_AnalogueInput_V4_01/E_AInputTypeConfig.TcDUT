@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <DUT Name="E_AInputTypeConfig" Id="{f7903f7d-fb38-4e15-8f47-570a6ca4f530}">
+    <Declaration><![CDATA[TYPE E_AInputTypeConfig :(
+(*Type Configuration of Input*)
+	eAInputType_PLC_NO				:=  0,
+	eAInputType_PLC_NC 				:=  1,
+	eAInputType_SAFE_NO 			:=  2,
+	eAInputType_SAFE_NC				:=  3
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

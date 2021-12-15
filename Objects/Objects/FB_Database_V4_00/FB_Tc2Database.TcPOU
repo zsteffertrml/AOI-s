@@ -1,0 +1,1881 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <POU Name="FB_Tc2Database" Id="{59790951-2ba5-4445-a78c-633b3525307d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Tc2Database
+VAR_INPUT
+	DatabaseType			: E_DatabaseType;
+END_VAR
+VAR_IN_OUT 
+	Control					: ST_System;         
+END_VAR
+VAR           
+	_Alarm					: BOOL;						//Device Alarm
+END_VAR
+VAR PERSISTENT
+	_Name					: STRING[15];		//Name for HMI
+	_Description			: STRING[40];		//Description for HMI
+	_AlarmMute				: BOOL;				//Alarm Mute
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="Alarm" Id="{e5a7b8fe-01b5-4de1-989f-8686f254bf29}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Alarm : Bool]]></Declaration>
+      <Get Name="Get" Id="{c2c1db2d-65e7-4282-9ab5-55c2e4ce1b66}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Alarm := _Alarm;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="AlarmMute" Id="{1be4d6a9-b520-461d-9fc3-303d25fc684e}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC AlarmMute : BOOL]]></Declaration>
+      <Set Name="Set" Id="{573aea14-a42e-47fd-9d29-559849100133}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[AlarmMute := _AlarmMute;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Description" Id="{51954ad6-ccad-4a3b-b7ee-1c9282cffc79}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Description : String[40]]]></Declaration>
+      <Get Name="Get" Id="{af5d5b46-7ebd-447e-949a-a05ec756d78d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Description := _Description;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{26f9e3e9-a67c-4131-8bcd-b6d96e16fffa}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Description := Description;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="M_AlarmMonitor" Id="{4958a912-99a3-4268-a0a5-424848a8b5e8}">
+      <Declaration><![CDATA[METHOD PROTECTED M_AlarmMonitor
+VAR_INPUT
+	Error 		: BOOL;
+	ErrorID		: UDINT;
+	DBSQLError 	: ST_DBSQLError;
+END_VAR
+VAR_INST
+	DbEvent 	: ARRAY[1601..1603] OF FB_SystemEvent;
+END_VAR]]></Declaration>
+      <Implementation>
+        <NWL>
+          <XmlArchive>
+            <Data>
+              <o xml:space="preserve" t="NWLImplementationObject">
+                <v n="NetworkListComment">""</v>
+                <v n="DefaultViewMode">"Ld"</v>
+                <l2 n="NetworkList" cet="Network">
+                  <o>
+                    <v n="ILActive">false</v>
+                    <v n="FBDValid">false</v>
+                    <v n="ILValid">false</v>
+                    <l2 n="ILLines" />
+                    <v n="Comment">""</v>
+                    <v n="Title">""</v>
+                    <v n="Label">""</v>
+                    <v n="OutCommented">false</v>
+                    <l2 n="NetworkItems">
+                      <o t="BoxTreeDemux">
+                        <v n="VarId">57</v>
+                        <o n="Input" t="BoxTreeBox">
+                          <v n="BoxType">"AND"</v>
+                          <o n="Instance" t="Operand">
+                            <n n="Operand" />
+                            <v n="Type">""</v>
+                            <v n="Comment">""</v>
+                            <v n="SymbolComment">""</v>
+                            <v n="Address">""</v>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <v n="LValue">false</v>
+                            <v n="Boolean">false</v>
+                            <v n="IsInstance">true</v>
+                            <v n="Id">565L</v>
+                          </o>
+                          <o n="OutputItems" t="OutputItemList">
+                            <l2 n="OutputItems" />
+                          </o>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <n n="InputFlags" />
+                          <l2 n="InputItems">
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"_AlarmMute"</v>
+                                <v n="Type">"BOOL"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">1</v>
+                                  <v n="Fixed">true</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">true</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">517L</v>
+                              </o>
+                              <v n="Id">516L</v>
+                            </o>
+                            <o t="BoxTreeBox">
+                              <v n="BoxType">"OR"</v>
+                              <o n="Instance" t="Operand">
+                                <n n="Operand" />
+                                <v n="Type">""</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">true</v>
+                                <v n="Id">569L</v>
+                              </o>
+                              <o n="OutputItems" t="OutputItemList">
+                                <l2 n="OutputItems" />
+                              </o>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <n n="InputFlags" />
+                              <l2 n="InputItems">
+                                <o t="BoxTreeOperand">
+                                  <o n="Operand" t="Operand">
+                                    <v n="Operand">"Error"</v>
+                                    <v n="Type">"BOOL"</v>
+                                    <v n="Comment">""</v>
+                                    <v n="SymbolComment">""</v>
+                                    <v n="Address">""</v>
+                                    <o n="Flags" t="Flags">
+                                      <v n="Flags">16</v>
+                                      <v n="Fixed">true</v>
+                                      <v n="Extensible">false</v>
+                                    </o>
+                                    <v n="LValue">false</v>
+                                    <v n="Boolean">true</v>
+                                    <v n="IsInstance">false</v>
+                                    <v n="Id">568L</v>
+                                  </o>
+                                  <v n="Id">567L</v>
+                                </o>
+                                <o t="BoxTreeBox">
+                                  <v n="BoxType">"AND"</v>
+                                  <o n="Instance" t="Operand">
+                                    <n n="Operand" />
+                                    <v n="Type">""</v>
+                                    <v n="Comment">""</v>
+                                    <v n="SymbolComment">""</v>
+                                    <v n="Address">""</v>
+                                    <o n="Flags" t="Flags">
+                                      <v n="Flags">0</v>
+                                      <v n="Fixed">false</v>
+                                      <v n="Extensible">false</v>
+                                    </o>
+                                    <v n="LValue">false</v>
+                                    <v n="Boolean">false</v>
+                                    <v n="IsInstance">true</v>
+                                    <v n="Id">573L</v>
+                                  </o>
+                                  <o n="OutputItems" t="OutputItemList">
+                                    <l2 n="OutputItems" />
+                                  </o>
+                                  <o n="Flags" t="Flags">
+                                    <v n="Flags">0</v>
+                                    <v n="Fixed">false</v>
+                                    <v n="Extensible">false</v>
+                                  </o>
+                                  <n n="InputFlags" />
+                                  <l2 n="InputItems" cet="BoxTreeOperand">
+                                    <o>
+                                      <o n="Operand" t="Operand">
+                                        <v n="Operand">"Error"</v>
+                                        <v n="Type">"BOOL"</v>
+                                        <v n="Comment">""</v>
+                                        <v n="SymbolComment">""</v>
+                                        <v n="Address">""</v>
+                                        <o n="Flags" t="Flags">
+                                          <v n="Flags">0</v>
+                                          <v n="Fixed">true</v>
+                                          <v n="Extensible">false</v>
+                                        </o>
+                                        <v n="LValue">false</v>
+                                        <v n="Boolean">true</v>
+                                        <v n="IsInstance">false</v>
+                                        <v n="Id">578L</v>
+                                      </o>
+                                      <v n="Id">577L</v>
+                                    </o>
+                                    <o>
+                                      <o n="Operand" t="Operand">
+                                        <v n="Operand">"_Alarm"</v>
+                                        <v n="Type">"BOOL"</v>
+                                        <v n="Comment">""</v>
+                                        <v n="SymbolComment">""</v>
+                                        <v n="Address">""</v>
+                                        <o n="Flags" t="Flags">
+                                          <v n="Flags">0</v>
+                                          <v n="Fixed">true</v>
+                                          <v n="Extensible">false</v>
+                                        </o>
+                                        <v n="LValue">false</v>
+                                        <v n="Boolean">true</v>
+                                        <v n="IsInstance">false</v>
+                                        <v n="Id">576L</v>
+                                      </o>
+                                      <v n="Id">575L</v>
+                                    </o>
+                                  </l2>
+                                  <o n="InputParam" t="ParamList">
+                                    <l2 n="Names" />
+                                    <l2 n="Types" />
+                                  </o>
+                                  <o n="OutputParam" t="ParamList">
+                                    <l2 n="Names" />
+                                    <l2 n="Types" />
+                                  </o>
+                                  <v n="CallType" t="Operator">And</v>
+                                  <n n="EN" />
+                                  <n n="ENO" />
+                                  <n n="STSnippet" />
+                                  <v n="ContainsExtensibleInputs">false</v>
+                                  <v n="ProvidesSTSnippet">false</v>
+                                  <v n="Id">574L</v>
+                                </o>
+                              </l2>
+                              <o n="InputParam" t="ParamList">
+                                <l2 n="Names" />
+                                <l2 n="Types" />
+                              </o>
+                              <o n="OutputParam" t="ParamList">
+                                <l2 n="Names" />
+                                <l2 n="Types" />
+                              </o>
+                              <v n="CallType" t="Operator">Or</v>
+                              <n n="EN" />
+                              <n n="ENO" />
+                              <n n="STSnippet" />
+                              <v n="ContainsExtensibleInputs">false</v>
+                              <v n="ProvidesSTSnippet">false</v>
+                              <v n="Id">570L</v>
+                            </o>
+                          </l2>
+                          <o n="InputParam" t="ParamList">
+                            <l2 n="Names" />
+                            <l2 n="Types" />
+                          </o>
+                          <o n="OutputParam" t="ParamList">
+                            <l2 n="Names" />
+                            <l2 n="Types" />
+                          </o>
+                          <v n="CallType" t="Operator">And</v>
+                          <n n="EN" />
+                          <n n="ENO" />
+                          <n n="STSnippet" />
+                          <v n="ContainsExtensibleInputs">false</v>
+                          <v n="ProvidesSTSnippet">false</v>
+                          <v n="Id">566L</v>
+                        </o>
+                        <v n="Id">537L</v>
+                      </o>
+                      <o t="BoxTreeAssign">
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" cet="Operand">
+                            <o>
+                              <v n="Operand">"DbEvent[1601].Raise"</v>
+                              <v n="Type">"BOOL"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">511L</v>
+                            </o>
+                          </l2>
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">false</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <o n="RValue" t="BoxTreeBox">
+                          <v n="BoxType">"GT"</v>
+                          <o n="Instance" t="Operand">
+                            <n n="Operand" />
+                            <v n="Type">""</v>
+                            <v n="Comment">""</v>
+                            <v n="SymbolComment">""</v>
+                            <v n="Address">""</v>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <v n="LValue">false</v>
+                            <v n="Boolean">false</v>
+                            <v n="IsInstance">true</v>
+                            <v n="Id">531L</v>
+                          </o>
+                          <o n="OutputItems" t="OutputItemList">
+                            <l2 n="OutputItems">
+                              <n />
+                            </l2>
+                          </o>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <n n="InputFlags" />
+                          <l2 n="InputItems">
+                            <o t="BoxTreeDemux">
+                              <v n="VarId">57</v>
+                              <n n="Input" />
+                              <v n="Id">538L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"ErrorID"</v>
+                                <v n="Type">"UDINT"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">534L</v>
+                              </o>
+                              <v n="Id">533L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"0"</v>
+                                <v n="Type">"INT"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">536L</v>
+                              </o>
+                              <v n="Id">535L</v>
+                            </o>
+                          </l2>
+                          <o n="InputParam" t="ParamList">
+                            <l2 n="Names" cet="String">
+                              <v>EN</v>
+                            </l2>
+                            <l2 n="Types" cet="String">
+                              <v>BOOL</v>
+                            </l2>
+                          </o>
+                          <o n="OutputParam" t="ParamList">
+                            <l2 n="Names" cet="String">
+                              <v></v>
+                            </l2>
+                            <l2 n="Types" cet="String">
+                              <v>BOOL</v>
+                            </l2>
+                          </o>
+                          <v n="CallType" t="Operator">Gt</v>
+                          <v n="EN">true</v>
+                          <v n="ENO">false</v>
+                          <n n="STSnippet" />
+                          <v n="ContainsExtensibleInputs">false</v>
+                          <v n="ProvidesSTSnippet">false</v>
+                          <v n="Id">532L</v>
+                        </o>
+                        <v n="Id">509L</v>
+                      </o>
+                      <o t="BoxTreeAssign">
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" cet="Operand">
+                            <o>
+                              <v n="Operand">"DbEvent[1602].Raise"</v>
+                              <v n="Type">"BOOL"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">true</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">553L</v>
+                            </o>
+                          </l2>
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">false</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <o n="RValue" t="BoxTreeBox">
+                          <v n="BoxType">"NE"</v>
+                          <o n="Instance" t="Operand">
+                            <n n="Operand" />
+                            <v n="Type">""</v>
+                            <v n="Comment">""</v>
+                            <v n="SymbolComment">""</v>
+                            <v n="Address">""</v>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <v n="LValue">false</v>
+                            <v n="Boolean">false</v>
+                            <v n="IsInstance">true</v>
+                            <v n="Id">541L</v>
+                          </o>
+                          <o n="OutputItems" t="OutputItemList">
+                            <l2 n="OutputItems">
+                              <n />
+                            </l2>
+                          </o>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">true</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <n n="InputFlags" />
+                          <l2 n="InputItems">
+                            <o t="BoxTreeDemux">
+                              <v n="VarId">57</v>
+                              <n n="Input" />
+                              <v n="Id">539L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"DBSQLError.sSQLState"</v>
+                                <v n="Type">"STRING(5)"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">544L</v>
+                              </o>
+                              <v n="Id">543L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"''"</v>
+                                <v n="Type">"STRING(INT#0)"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">546L</v>
+                              </o>
+                              <v n="Id">545L</v>
+                            </o>
+                          </l2>
+                          <o n="InputParam" t="ParamList">
+                            <l2 n="Names" cet="String">
+                              <v>EN</v>
+                            </l2>
+                            <l2 n="Types" cet="String">
+                              <v>BOOL</v>
+                            </l2>
+                          </o>
+                          <o n="OutputParam" t="ParamList">
+                            <l2 n="Names" cet="String">
+                              <v></v>
+                            </l2>
+                            <l2 n="Types" cet="String">
+                              <v>BOOL</v>
+                            </l2>
+                          </o>
+                          <v n="CallType" t="Operator">Ne</v>
+                          <v n="EN">true</v>
+                          <v n="ENO">false</v>
+                          <n n="STSnippet" />
+                          <v n="ContainsExtensibleInputs">false</v>
+                          <v n="ProvidesSTSnippet">false</v>
+                          <v n="Id">542L</v>
+                        </o>
+                        <v n="Id">554L</v>
+                      </o>
+                      <o t="BoxTreeAssign">
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" cet="Operand">
+                            <o>
+                              <v n="Operand">"DbEvent[1603].Raise"</v>
+                              <v n="Type">"BOOL"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">true</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">555L</v>
+                            </o>
+                          </l2>
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">false</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <o n="RValue" t="BoxTreeBox">
+                          <v n="BoxType">"NE"</v>
+                          <o n="Instance" t="Operand">
+                            <n n="Operand" />
+                            <v n="Type">""</v>
+                            <v n="Comment">""</v>
+                            <v n="SymbolComment">""</v>
+                            <v n="Address">""</v>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <v n="LValue">false</v>
+                            <v n="Boolean">false</v>
+                            <v n="IsInstance">true</v>
+                            <v n="Id">649L</v>
+                          </o>
+                          <o n="OutputItems" t="OutputItemList">
+                            <l2 n="OutputItems">
+                              <n />
+                            </l2>
+                          </o>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">true</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <n n="InputFlags" />
+                          <l2 n="InputItems">
+                            <o t="BoxTreeDemux">
+                              <v n="VarId">57</v>
+                              <n n="Input" />
+                              <v n="Id">540L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"DBSQLError.nSQLErrorCode"</v>
+                                <v n="Type">"DINT"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">550L</v>
+                              </o>
+                              <v n="Id">549L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"0"</v>
+                                <v n="Type">"INT"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">552L</v>
+                              </o>
+                              <v n="Id">551L</v>
+                            </o>
+                          </l2>
+                          <o n="InputParam" t="ParamList">
+                            <l2 n="Names" cet="String">
+                              <v>EN</v>
+                            </l2>
+                            <l2 n="Types" cet="String">
+                              <v>BOOL</v>
+                            </l2>
+                          </o>
+                          <o n="OutputParam" t="ParamList">
+                            <l2 n="Names" cet="String">
+                              <v></v>
+                            </l2>
+                            <l2 n="Types" cet="String">
+                              <v>BOOL</v>
+                            </l2>
+                          </o>
+                          <v n="CallType" t="Operator">Ne</v>
+                          <v n="EN">true</v>
+                          <v n="ENO">false</v>
+                          <n n="STSnippet" />
+                          <v n="ContainsExtensibleInputs">false</v>
+                          <v n="ProvidesSTSnippet">false</v>
+                          <v n="Id">650L</v>
+                        </o>
+                        <v n="Id">556L</v>
+                      </o>
+                    </l2>
+                    <l2 n="Connectors" />
+                    <v n="Id">506L</v>
+                  </o>
+                  <o>
+                    <v n="ILActive">false</v>
+                    <v n="FBDValid">false</v>
+                    <v n="ILValid">false</v>
+                    <l2 n="ILLines" />
+                    <v n="Comment">""</v>
+                    <v n="Title">""</v>
+                    <v n="Label">""</v>
+                    <v n="OutCommented">false</v>
+                    <l2 n="NetworkItems" cet="BoxTreeBox">
+                      <o>
+                        <v n="BoxType">"FB_SystemEvent"</v>
+                        <o n="Instance" t="Operand">
+                          <v n="Operand">"DbEvent[1601]"</v>
+                          <v n="Type">"FB_SystemEvent"</v>
+                          <v n="Comment">""</v>
+                          <v n="SymbolComment">""</v>
+                          <v n="Address">""</v>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <v n="LValue">false</v>
+                          <v n="Boolean">false</v>
+                          <v n="IsInstance">true</v>
+                          <v n="Id">582L</v>
+                        </o>
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" />
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">true</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <n n="InputFlags" />
+                        <l2 n="InputItems" cet="BoxTreeOperand">
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">""</v>
+                              <v n="Type">""</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">600L</v>
+                            </o>
+                            <v n="Id">599L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"E_EventType.eAlarm"</v>
+                              <v n="Type">"E_EVENTTYPE"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">587L</v>
+                            </o>
+                            <v n="Id">586L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"TC_EVENTS.Tc2DataBase.A_1601"</v>
+                              <v n="Type">"TcEventEntry"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">589L</v>
+                            </o>
+                            <v n="Id">588L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"_Description"</v>
+                              <v n="Type">"STRING(40)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">591L</v>
+                            </o>
+                            <v n="Id">590L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"CONCAT(TO_STRING(ErrorID),CONCAT(' - ', M_DbServerAlarms(ErrorID)))"</v>
+                              <v n="Type">"STRING(255)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">593L</v>
+                            </o>
+                            <v n="Id">592L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"Control"</v>
+                              <v n="Type">"ST_System"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">597L</v>
+                            </o>
+                            <v n="Id">596L</v>
+                          </o>
+                        </l2>
+                        <o n="InputParam" t="ParamList">
+                          <l2 n="Names" cet="String">
+                            <v>Raise</v>
+                            <v>EventType</v>
+                            <v>EventEntry</v>
+                            <v>Arg0</v>
+                            <v>Arg1</v>
+                            <v>Control</v>
+                          </l2>
+                          <l2 n="Types" cet="String">
+                            <v>BOOL</v>
+                            <v>E_EventType</v>
+                            <v>TcEventEntry</v>
+                            <v>STRING</v>
+                            <v>STRING</v>
+                            <v>ST_System[REF]</v>
+                          </l2>
+                        </o>
+                        <o n="OutputParam" t="ParamList">
+                          <l2 n="Names" />
+                          <l2 n="Types" />
+                        </o>
+                        <v n="CallType" t="Operator">FunctionBlock</v>
+                        <v n="EN">false</v>
+                        <v n="ENO">false</v>
+                        <n n="STSnippet" />
+                        <v n="ContainsExtensibleInputs">false</v>
+                        <v n="ProvidesSTSnippet">false</v>
+                        <v n="Id">583L</v>
+                      </o>
+                    </l2>
+                    <l2 n="Connectors" />
+                    <v n="Id">581L</v>
+                  </o>
+                  <o>
+                    <v n="ILActive">false</v>
+                    <v n="FBDValid">false</v>
+                    <v n="ILValid">false</v>
+                    <l2 n="ILLines" />
+                    <v n="Comment">""</v>
+                    <v n="Title">""</v>
+                    <v n="Label">""</v>
+                    <v n="OutCommented">false</v>
+                    <l2 n="NetworkItems" cet="BoxTreeBox">
+                      <o>
+                        <v n="BoxType">"FB_SystemEvent"</v>
+                        <o n="Instance" t="Operand">
+                          <v n="Operand">"DbEvent[1602]"</v>
+                          <v n="Type">"FB_SystemEvent"</v>
+                          <v n="Comment">""</v>
+                          <v n="SymbolComment">""</v>
+                          <v n="Address">""</v>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <v n="LValue">false</v>
+                          <v n="Boolean">false</v>
+                          <v n="IsInstance">true</v>
+                          <v n="Id">602L</v>
+                        </o>
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" />
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">true</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <n n="InputFlags" />
+                        <l2 n="InputItems" cet="BoxTreeOperand">
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">""</v>
+                              <v n="Type">""</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">620L</v>
+                            </o>
+                            <v n="Id">619L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"E_EventType.eAlarm"</v>
+                              <v n="Type">"E_EVENTTYPE"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">607L</v>
+                            </o>
+                            <v n="Id">606L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"TC_EVENTS.Tc2DataBase.A_1602"</v>
+                              <v n="Type">"TcEventEntry"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">609L</v>
+                            </o>
+                            <v n="Id">608L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"_Description"</v>
+                              <v n="Type">"STRING(40)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">611L</v>
+                            </o>
+                            <v n="Id">610L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"CONCAT(DBSQLError.sSQLState, CONCAT(' - ', M_OdbcAlarms(DBSQLError.sSQLState)))"</v>
+                              <v n="Type">"STRING(255)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">613L</v>
+                            </o>
+                            <v n="Id">612L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"Control"</v>
+                              <v n="Type">"ST_System"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">617L</v>
+                            </o>
+                            <v n="Id">616L</v>
+                          </o>
+                        </l2>
+                        <o n="InputParam" t="ParamList">
+                          <l2 n="Names" cet="String">
+                            <v>Raise</v>
+                            <v>EventType</v>
+                            <v>EventEntry</v>
+                            <v>Arg0</v>
+                            <v>Arg1</v>
+                            <v>Control</v>
+                          </l2>
+                          <l2 n="Types" cet="String">
+                            <v>BOOL</v>
+                            <v>E_EventType</v>
+                            <v>TcEventEntry</v>
+                            <v>STRING</v>
+                            <v>STRING</v>
+                            <v>ST_System[REF]</v>
+                          </l2>
+                        </o>
+                        <o n="OutputParam" t="ParamList">
+                          <l2 n="Names" />
+                          <l2 n="Types" />
+                        </o>
+                        <v n="CallType" t="Operator">FunctionBlock</v>
+                        <v n="EN">false</v>
+                        <v n="ENO">false</v>
+                        <n n="STSnippet" />
+                        <v n="ContainsExtensibleInputs">false</v>
+                        <v n="ProvidesSTSnippet">false</v>
+                        <v n="Id">603L</v>
+                      </o>
+                    </l2>
+                    <l2 n="Connectors" />
+                    <v n="Id">601L</v>
+                  </o>
+                  <o>
+                    <v n="ILActive">false</v>
+                    <v n="FBDValid">false</v>
+                    <v n="ILValid">false</v>
+                    <l2 n="ILLines" />
+                    <v n="Comment">""</v>
+                    <v n="Title">""</v>
+                    <v n="Label">""</v>
+                    <v n="OutCommented">false</v>
+                    <l2 n="NetworkItems" cet="BoxTreeBox">
+                      <o>
+                        <v n="BoxType">"FB_SystemEvent"</v>
+                        <o n="Instance" t="Operand">
+                          <v n="Operand">"DbEvent[1603]"</v>
+                          <v n="Type">"FB_SystemEvent"</v>
+                          <v n="Comment">""</v>
+                          <v n="SymbolComment">""</v>
+                          <v n="Address">""</v>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <v n="LValue">false</v>
+                          <v n="Boolean">false</v>
+                          <v n="IsInstance">true</v>
+                          <v n="Id">622L</v>
+                        </o>
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" />
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">true</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <n n="InputFlags" />
+                        <l2 n="InputItems" cet="BoxTreeOperand">
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">""</v>
+                              <v n="Type">""</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">640L</v>
+                            </o>
+                            <v n="Id">639L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"E_EventType.eAlarm"</v>
+                              <v n="Type">"E_EVENTTYPE"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">627L</v>
+                            </o>
+                            <v n="Id">626L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"TC_EVENTS.Tc2DataBase.A_1603"</v>
+                              <v n="Type">"TcEventEntry"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">629L</v>
+                            </o>
+                            <v n="Id">628L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"_Description"</v>
+                              <v n="Type">"STRING(40)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">631L</v>
+                            </o>
+                            <v n="Id">630L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"CONCAT(TO_STRING(DBSQLError.nSQLErrorCode),CONCAT(' - ', M_DbAlarms(TO_UDINT(DBSQLError.nSQLErrorCode))))"</v>
+                              <v n="Type">"STRING(255)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">633L</v>
+                            </o>
+                            <v n="Id">632L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"Control"</v>
+                              <v n="Type">"ST_System"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">637L</v>
+                            </o>
+                            <v n="Id">636L</v>
+                          </o>
+                        </l2>
+                        <o n="InputParam" t="ParamList">
+                          <l2 n="Names" cet="String">
+                            <v>Raise</v>
+                            <v>EventType</v>
+                            <v>EventEntry</v>
+                            <v>Arg0</v>
+                            <v>Arg1</v>
+                            <v>Control</v>
+                          </l2>
+                          <l2 n="Types" cet="String">
+                            <v>BOOL</v>
+                            <v>E_EventType</v>
+                            <v>TcEventEntry</v>
+                            <v>STRING</v>
+                            <v>STRING</v>
+                            <v>ST_System[REF]</v>
+                          </l2>
+                        </o>
+                        <o n="OutputParam" t="ParamList">
+                          <l2 n="Names" />
+                          <l2 n="Types" />
+                        </o>
+                        <v n="CallType" t="Operator">FunctionBlock</v>
+                        <v n="EN">false</v>
+                        <v n="ENO">false</v>
+                        <n n="STSnippet" />
+                        <v n="ContainsExtensibleInputs">false</v>
+                        <v n="ProvidesSTSnippet">false</v>
+                        <v n="Id">623L</v>
+                      </o>
+                    </l2>
+                    <l2 n="Connectors" />
+                    <v n="Id">621L</v>
+                  </o>
+                  <o>
+                    <v n="ILActive">false</v>
+                    <v n="FBDValid">false</v>
+                    <v n="ILValid">false</v>
+                    <l2 n="ILLines" />
+                    <v n="Comment">""</v>
+                    <v n="Title">""</v>
+                    <v n="Label">""</v>
+                    <v n="OutCommented">false</v>
+                    <l2 n="NetworkItems" cet="BoxTreeAssign">
+                      <o>
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" cet="Operand">
+                            <o>
+                              <v n="Operand">"_Alarm"</v>
+                              <v n="Type">"BOOL"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">true</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">423L</v>
+                            </o>
+                          </l2>
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">false</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <o n="RValue" t="BoxTreeBox">
+                          <v n="BoxType">"OR"</v>
+                          <o n="Instance" t="Operand">
+                            <n n="Operand" />
+                            <v n="Type">""</v>
+                            <v n="Comment">""</v>
+                            <v n="SymbolComment">""</v>
+                            <v n="Address">""</v>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <v n="LValue">false</v>
+                            <v n="Boolean">false</v>
+                            <v n="IsInstance">true</v>
+                            <v n="Id">437L</v>
+                          </o>
+                          <o n="OutputItems" t="OutputItemList">
+                            <l2 n="OutputItems" />
+                          </o>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <n n="InputFlags" />
+                          <l2 n="InputItems" cet="BoxTreeOperand">
+                            <o>
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"DbEvent[1601].Alarm"</v>
+                                <v n="Type">"BOOL"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">true</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">true</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">436L</v>
+                              </o>
+                              <v n="Id">435L</v>
+                            </o>
+                            <o>
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"DbEvent[1602].Alarm"</v>
+                                <v n="Type">"BOOL"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">true</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">true</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">440L</v>
+                              </o>
+                              <v n="Id">439L</v>
+                            </o>
+                            <o>
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"DbEvent[1603].Alarm"</v>
+                                <v n="Type">"BOOL"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">true</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">true</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">442L</v>
+                              </o>
+                              <v n="Id">441L</v>
+                            </o>
+                          </l2>
+                          <o n="InputParam" t="ParamList">
+                            <l2 n="Names" />
+                            <l2 n="Types" />
+                          </o>
+                          <o n="OutputParam" t="ParamList">
+                            <l2 n="Names" />
+                            <l2 n="Types" />
+                          </o>
+                          <v n="CallType" t="Operator">Or</v>
+                          <n n="EN" />
+                          <n n="ENO" />
+                          <n n="STSnippet" />
+                          <v n="ContainsExtensibleInputs">false</v>
+                          <v n="ProvidesSTSnippet">false</v>
+                          <v n="Id">438L</v>
+                        </o>
+                        <v n="Id">424L</v>
+                      </o>
+                    </l2>
+                    <l2 n="Connectors" />
+                    <v n="Id">421L</v>
+                  </o>
+                </l2>
+                <v n="BranchCounter">58</v>
+                <v n="ValidIds">true</v>
+              </o>
+            </Data>
+            <TypeList>
+              <Type n="Boolean">System.Boolean</Type>
+              <Type n="BoxTreeAssign">{9873c309-1f09-4ebf-9078-42d8057ef11b}</Type>
+              <Type n="BoxTreeBox">{acfc6f68-8e3a-4af5-bf81-3dd512095a46}</Type>
+              <Type n="BoxTreeDemux">{b1d55618-017c-4bc5-990a-55c2f27d9d3a}</Type>
+              <Type n="BoxTreeOperand">{9de7f100-1b87-424c-a62e-45b0cfc85ed2}</Type>
+              <Type n="Flags">{668066f2-6069-46b3-8962-8db8d13d7db2}</Type>
+              <Type n="Int32">System.Int32</Type>
+              <Type n="Int64">System.Int64</Type>
+              <Type n="Network">{d9a99d73-b633-47db-b876-a752acb25871}</Type>
+              <Type n="NWLImplementationObject">{25e509de-33d4-4447-93f8-c9e4ea381c8b}</Type>
+              <Type n="Operand">{c9b2f165-48a2-4a45-8326-3952d8a3d708}</Type>
+              <Type n="Operator">{bffb3c53-f105-4e85-aba2-e30df579d75f}</Type>
+              <Type n="OutputItemList">{f40d3e09-c02c-4522-a88c-dac23558cfc4}</Type>
+              <Type n="ParamList">{71496971-9e0c-4677-a832-b9583b571130}</Type>
+              <Type n="String">System.String</Type>
+            </TypeList>
+          </XmlArchive>
+        </NWL>
+      </Implementation>
+    </Method>
+    <Method Name="M_DbAlarms" Id="{599a9079-2af0-4844-97db-fb6c86a6ff8d}">
+      <Declaration><![CDATA[METHOD PROTECTED M_DbAlarms : STRING(255)
+VAR_INPUT
+	nSQLErrorCode				: UDINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE DatabaseType OF
+E_DatabaseType.eMicrosoftSqlCompact,E_DatabaseType.eMicrosoftSql,E_DatabaseType.eMicrosoftAccess:
+	CASE nSQLErrorCode OF
+		16#80040E00: M_DbAlarms:='Invalid accessor';
+		16#80040E01: M_DbAlarms:='Creating another row would have exceeded the total number of active rows supported by the rowset';
+		16#80040E02: M_DbAlarms:='Unable to write with a read-only accessor';
+		16#80040E03: M_DbAlarms:='Given values violate the database schema';
+		16#80040E04: M_DbAlarms:='Invalid row handle';
+		16#80040E05: M_DbAlarms:='An object was open';
+		16#80040E06: M_DbAlarms:='Invalid chapter';
+		16#80040E07: M_DbAlarms:='A literal value in the command could not be converted to the correct type due to a reason other than data overflow';
+		16#80040E08: M_DbAlarms:='Invalid binding info';
+		16#80040E09: M_DbAlarms:='Permission denied'; 
+		16#80040E0A: M_DbAlarms:='Specified column does not contain bookmarks or chapters';
+		16#80040E0B: M_DbAlarms:='Some cost limits were rejected';
+		16#80040E0C: M_DbAlarms:='No command has been set for the command object';
+		16#80040E0D: M_DbAlarms:='Unable to find a query plan within the given cost limit';
+		16#80040E0E: M_DbAlarms:='Invalid bookmark';
+		16#80040E0F: M_DbAlarms:='Invalid lock mode';
+		16#80040E10: M_DbAlarms:='No value given for one or more required parameters';
+		16#80040E11: M_DbAlarms:='Invalid column ID';
+		16#80040E12: M_DbAlarms:='Invalid ratio';
+		16#80040E13: M_DbAlarms:='Invalid value';
+		16#80040E14: M_DbAlarms:='The command contained one or more errors';
+		16#80040E15: M_DbAlarms:='The executing command cannot be canceled';
+		16#80040E16: M_DbAlarms:='The provider does not support the specified dialect';
+		16#80040E17: M_DbAlarms:='A data source with the specified name already exists';
+		16#80040E18: M_DbAlarms:='The rowset was builtover a live data feed and cannot be restarted';
+		16#80040E19: M_DbAlarms:='No key matching the described characteristics could be found within the current range';
+		16#80040E1A: M_DbAlarms:='Ownership of this tree has been given to the provider';
+		16#80040E1B: M_DbAlarms:='The provider is unable to determine identity for newly inserted rows';
+		16#80040E1C: M_DbAlarms:='No nonzero weights specified for any goals supported, so goal was rejected; current goal was not changed';
+		16#80040E1D: M_DbAlarms:='Requested conversion is not supported';
+		16#80040E1E: M_DbAlarms:='lRowsOffset would position you past either end of the rowset, regardless of the cRows value specified; cRowsObtained is 0';
+		16#80040E1F: M_DbAlarms:='Information was requested for a query, and the query was not set';
+		16#80040E20: M_DbAlarms:='Provider called a method from IRowsetNotify in the consumer and NT';
+		16#80040E21: M_DbAlarms:='Errors occurred';
+		16#80040E22: M_DbAlarms:='A non-NULL controlling IUnknown was specified and the object being created does not support aggregation';
+		16#80040E23: M_DbAlarms:='A given HROW referred to a hard- or soft-deleted row';
+		16#80040E24: M_DbAlarms:='The rowset does not support fetching backwards';
+		16#80040E25: M_DbAlarms:='All HROWs must be released before new ones can be obtained';
+		16#80040E26: M_DbAlarms:='One of the specified storage flags was not supported';
+		16#80040E27: M_DbAlarms:='The comparison operator was invalid';
+		16#80040E28: M_DbAlarms:='The specified status flag was neither DBCOLUMNSTATUS_OK nor DBCOLUMNSTATUS_ISNUL';
+		16#80040E29: M_DbAlarms:='The rowset cannot scroll backwards';
+		16#80040E2A: M_DbAlarms:='Invalid region handle';
+		16#80040E2B: M_DbAlarms:='The specified set of rows was not contiguous to or overlapping the rows in the specified watch region';
+		16#80040E2C: M_DbAlarms:='A transition from ALL* to MOVE* or EXTEND* was specified';
+		16#80040E2D: M_DbAlarms:='The specified region is not a proper subregion of the region identified by the given watch region handle';
+		16#80040E2E: M_DbAlarms:='The provider does not support multi-statement commands';
+		16#80040E2F: M_DbAlarms:='A specified value violated the integrity constraints for a column or table';
+		16#80040E30: M_DbAlarms:='The given type name was unrecognized';
+		16#80040E31: M_DbAlarms:='Execution aborted because a resource limit has been reached; no results have been returned';
+		16#80040E32: M_DbAlarms:='Cannot clone a command object whose command tree contains a rowset or rowsets';
+		16#80040E33: M_DbAlarms:='Cannot represent the current tree as text';
+		16#80040E34: M_DbAlarms:='The specified index already exists';
+		16#80040E35: M_DbAlarms:='The specified index does not exist';
+		16#80040E36: M_DbAlarms:='The specified index was in use';
+		16#80040E37: M_DbAlarms:='The specified table does not exist';
+		16#80040E38: M_DbAlarms:='The rowset was using optimistic concurrency and the value of a column has been changed since it was last read';
+		16#80040E39: M_DbAlarms:='Errors were detected during the copy';
+		16#80040E3A: M_DbAlarms:='A specified precision was invalid';
+		16#80040E3B: M_DbAlarms:='A specified scale was invalid';
+		16#80040E3C: M_DbAlarms:='Invalid table ID';
+		16#80040E3D: M_DbAlarms:='A specified type was invalid';
+		16#80040E3E: M_DbAlarms:='A column ID was occurred more than once in the specification';
+		16#80040E3F: M_DbAlarms:='The specified table already exists';
+		16#80040E40: M_DbAlarms:='The specified table was in use';
+		16#80040E41: M_DbAlarms:='The specified locale ID was not supported';
+		16#80040E42: M_DbAlarms:='The specified record number is invalid';
+		16#80040E43: M_DbAlarms:='Although the bookmark was validly formed, no row could be found to match it';
+		16#80040E44: M_DbAlarms:='The value of a property was invalid';
+		16#80040E45: M_DbAlarms:='The rowset was not chaptered';
+		16#80040E46: M_DbAlarms:='Invalid accessor';
+		16#80040E47: M_DbAlarms:='Invalid storage flags';
+		16#80040E48: M_DbAlarms:='By-ref accessors are not supported by this provider';
+		16#80040E49: M_DbAlarms:='Null accessors are not supported by this provider';
+		16#80040E4A: M_DbAlarms:='The command was not prepared';
+		16#80040E4B: M_DbAlarms:='The specified accessor was not a parameter accessor';
+		16#80040E4C: M_DbAlarms:='The given accessor was write-only';
+		16#80040E4D: M_DbAlarms:='Authentication failed';
+		16#80040E4E: M_DbAlarms:='The change was canceled during notification; no columns are changed';
+		16#80040E4F: M_DbAlarms:='The rowset was single-chaptered and the chapter was not released';
+		16#80040E50: M_DbAlarms:='Invalid source handle';
+		16#80040E51: M_DbAlarms:='The provider cannot derive parameter info and SetParameterInfo has not been called';
+		16#80040E52: M_DbAlarms:='The data source object is already initialized';
+		16#80040E53: M_DbAlarms:='The provider does not support this method';
+		16#80040E54: M_DbAlarms:='The number of rows with pending changes has exceeded the set limit';
+		16#80040E55: M_DbAlarms:='The specified column did not exist';
+		16#80040E56: M_DbAlarms:='There are pending changes on a row with a reference count of zero';
+		16#80040E57: M_DbAlarms:='A literal value in the command overflowed the range of the type of the associated column';
+		16#80040E58: M_DbAlarms:='The supplied HRESULT was invalid';
+		16#80040E59: M_DbAlarms:='The supplied LookupID was invalid';
+		16#80040E5A: M_DbAlarms:='The supplied DynamicErrorID was invalid';
+		16#80040E5B: M_DbAlarms:='Unable to get visible data for a newly-inserted row that has not yet been updated';
+		16#80040E5C: M_DbAlarms:='Invalid conversion flag';
+		16#80040E5D: M_DbAlarms:='The given parameter name was unrecognized';
+		16#80040E5E: M_DbAlarms:='Multiple storage objects can not be open simultaneously';
+		16#80040E5F: M_DbAlarms:='The requested filter could not be opened';
+		16#80040E60: M_DbAlarms:='The requested order could not be opened';
+		16#80040E61: M_DbAlarms:='Bad tuple';
+		16#80040E62: M_DbAlarms:='Bad coordinate';
+		16#80040E63: M_DbAlarms:='The given axis was not valid for this Dataset';
+		16#80040E64: M_DbAlarms:='One or more of the given cell ordinals was invalid';
+		16#80040E65: M_DbAlarms:='The supplied columnID was invalid';
+		16#80040E67: M_DbAlarms:='The supplied command does not have a DBID (Note: DBID is SQL shorthand for Database ID.)';
+		16#80040E68: M_DbAlarms:='The supplied DBID already exists';
+		16#80040E69: M_DbAlarms:='The maximum number of Sessions supported by the provider has already been created. The consumer must release one or more currently held Sessions before obtaining a new Session object';
+		16#80040E72: M_DbAlarms:='The index ID is invalid';
+		16#80040E73: M_DbAlarms:='The initialization string does not conform to specification';
+		16#80040E74: M_DbAlarms:='The OLE DB root enumerator did not return any providers that matched an of the SOURCES_TYPEs requested';
+		16#80040E75: M_DbAlarms:='The initialization string specifies a provider which does not match the currently active provider.';
+		16#80040E76: M_DbAlarms:='The specified DBID is invalid';
+		16#80040E6A: M_DbAlarms:='Invalid trustee value';
+		16#80040E6B: M_DbAlarms:='The trustee is not for the current data source';
+		16#80040E6C: M_DbAlarms:='The trustee does not support memberships/collections';
+		16#80040E6D: M_DbAlarms:='The object is invalid or unknown to the provider';
+		16#80040E6E: M_DbAlarms:='No owner exists for the object';
+		16#80040E6F: M_DbAlarms:='The access entry list supplied is invalid';
+		16#80040E70: M_DbAlarms:='The trustee supplied as owner is invalid or unknown to the provider';
+		16#80040E71: M_DbAlarms:='The permission supplied in the access entry list is invalid';
+		16#80040E77: M_DbAlarms:='The ConstraintType was invalid or not supported by the provider.';
+		16#80040E78: M_DbAlarms:='The ConstraintType was not CONSTRAINTTYPE_FOREIGNKEY and cForeignKeyColumns was not zero';
+		16#80040E79: M_DbAlarms:='The Deferrability was invalid or the value was not supported by the provider';
+		16#80040E80: M_DbAlarms:='The MatchType was invalid or the value was not supported by the provider';
+		16#80040E8A: M_DbAlarms:='The UpdateRule or DeleteRule was invalid or the value was not supported by the provider';
+		16#80040E8B: M_DbAlarms:='The pConstraintID did not exist in the data source';
+		16#80040E8C: M_DbAlarms:='The dwFlags was invalid';
+		16#80040E8D: M_DbAlarms:='The rguidColumnType pointed to a GUID that does not match the object type of this column or this column was not set';
+		16#80040E8E: M_DbAlarms:='The requested URL was out-of-scope';
+		16#80040E90: M_DbAlarms:='The provider could not drop the object';
+		16#80040E91: M_DbAlarms:='There is no source row';
+		16#80040E92: M_DbAlarms:='The OLE DB object represented by this URL is locked by one or more other processes';
+		16#80040E93: M_DbAlarms:='The client requested an object type that is only valid for a collection';
+		16#80040E94: M_DbAlarms:='The caller requested write access to a read-only object';
+		16#80040E95: M_DbAlarms:='The provider could not connect to the server for this object';
+		16#80040E96: M_DbAlarms:='The provider could not connect to the server for this object';
+		16#80040E97: M_DbAlarms:='The attempt to bind to the object timed out';
+		16#80040E98: M_DbAlarms:='The provider was unable to create an object at this URL because an object named by this URL already exists';
+		16#80040E99: M_DbAlarms:='The provider could not drop the object';
+		16#80040E9A: M_DbAlarms:='The provider was unable to create an object at this URL because the server was out of physical storage';
+		16#00040EC0: M_DbAlarms:='Fetching requested number of rows would have exceeded total number of active rows supported by the rowset';
+		16#00040EC1: M_DbAlarms:='One or more column types are incompatible; conversion errors will occur during copying';
+		16#00040EC2: M_DbAlarms:='Parameter type information has been overridden by caller';
+		16#00040EC3: M_DbAlarms:='Skipped bookmark for deleted or non-member row';
+		16#00040EC4: M_DbAlarms:='Errors found in validating tree';
+		16#00040EC5: M_DbAlarms:='There are no more rowsets';
+		16#00040EC6: M_DbAlarms:='Reached start or end of rowset or chapter';
+		16#00040EC7: M_DbAlarms:='The provider re-executed the command';
+		16#00040EC8: M_DbAlarms:='Variable data buffer ful';
+		16#00040EC9: M_DbAlarms:='There are no more results';
+		16#00040ECA: M_DbAlarms:='Server cannot release or downgrade a lock until the end of the transaction';
+		16#00040ECB: M_DbAlarms:='Specified weight was not supported or exceeded the supported limit and was set to 0 or the supported limit';
+		16#00040ECC: M_DbAlarms:='Consumer is uninterested in receiving further notification calls for this reason';
+		16#00040ECD: M_DbAlarms:='Input dialect was ignored and text was returned in different dialect';
+		16#00040ECE: M_DbAlarms:='Consumer is uninterested in receiving further notification calls for this phase';
+		16#00040ECF: M_DbAlarms:='Consumer is uninterested in receiving further notification calls for this reason';
+		16#00040ED0: M_DbAlarms:='The operation is being processed asynchronously';
+		16#00040ED1: M_DbAlarms:='In order to reposition to the start of the rowset, the provider had to reexecute the query; either the order of the columns changed or columns were added to or removed from the rowset';
+		16#00040ED2: M_DbAlarms:='The method had some errors; errors have been returned in the error array';
+		16#00040ED3: M_DbAlarms:='Invalid row handle';
+		16#00040ED4: M_DbAlarms:='A given HROW referred to a hard-deleted row';
+		16#00040ED5: M_DbAlarms:='The provider was unable to keep track of all the changes; the client must refetch the data associated with the watch region using another method';
+		16#00040ED6: M_DbAlarms:='Execution stopped because a resource LIMIT has been reached; results obtained so far have been returned but execution cannot be resumed';
+		16#00040ED7: M_DbAlarms:='The bind failed because the provider was unable to satisfy all of the bind flags or properties';
+		16#00040ED8: M_DbAlarms:='A lock was upgraded FROM the value specified';
+		16#00040ED9: M_DbAlarms:='One OR more properties were changed as allowed BY provider';
+		16#00040EDA: M_DbAlarms:='Errors occurred';
+		16#00040EDB: M_DbAlarms:='A specified parameter was invalid';
+		16#00040EDC: M_DbAlarms:='Updating this row caused more than one row to be updated in the data source';
+		16#00040EDD: M_DbAlarms:='The row has no row-specific columns';
+	ELSE
+		M_DbAlarms:= 'Undefined Microsoft Sql Alarm';
+	END_CASE
+E_DatabaseType.eMySQL:
+	//TODO
+E_DatabaseType.eOracle:
+	//TODO
+E_DatabaseType.eDB2:
+	//TODO
+E_DatabaseType.ePostgreSQL:
+	//TODO
+E_DatabaseType.eInterbase:
+	//TODO
+E_DatabaseType.eXml:
+	CASE nSQLErrorCode OF
+		1:	M_DbAlarms:='FUNCTION NOT allowed.';
+		2:	M_DbAlarms:='XML file could not be read';
+		3:	M_DbAlarms:='XML schema could not be read';
+		4:	M_DbAlarms:='Syntax error';
+		5:	M_DbAlarms:='Table could not be created.';
+		6:	M_DbAlarms:='The list OF INSERT VALUES are NOT conform TO the collumn list';
+		7:	M_DbAlarms:='Memory OF the PLC structure NOT big enough.';
+		8:	M_DbAlarms:='XML file could not be created.';
+		9:	M_DbAlarms:='XML database not found.';
+		10:	M_DbAlarms:='XML table NOT found.';
+	ELSE
+		M_DbAlarms:= 'Undefined XML DB Alarm';
+	END_CASE
+E_DatabaseType.eAscii:
+	CASE nSQLErrorCode OF
+		1:	M_DbAlarms:='FUNCTION NOT allowed.';
+		2:	M_DbAlarms:='Syntax error';
+		3:	M_DbAlarms:='File could not be open.';
+	ELSE
+		M_DbAlarms:= 'Undefined ASCII DB Alarm';
+	END_CASE
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DbServerAlarms" Id="{c2fec20f-8985-477c-9beb-91d0e0e2670b}">
+      <Declaration><![CDATA[METHOD PROTECTED M_DbServerAlarms : STRING
+VAR_INPUT
+	nErrID				: UDINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE nErrID OF
+	131073: M_DbServerAlarms := 'Microsoft SQL Compact database';
+	262145: M_DbServerAlarms := 'Microsoft SQL database';
+	524289: M_DbServerAlarms := 'Microsoft Access database';
+	1048577: M_DbServerAlarms := 'MySQL database';
+	2097153: M_DbServerAlarms := 'Oracle database';
+	4194305: M_DbServerAlarms := 'DB2 database';
+	8388609: M_DbServerAlarms := 'PostgreSQL database';
+	16777217: M_DbServerAlarms := 'Interbase/Firebird database';
+	33554433: M_DbServerAlarms := 'NULL values are not allowed';
+	33554434: M_DbServerAlarms := 'FB_DBRead selected value is NULL';
+	33554435: M_DbServerAlarms := 'DBID is unknown';
+	33554436: M_DbServerAlarms := 'ADSDevID is unknown';
+	33554437: M_DbServerAlarms := 'No open database connection found for DBID xy';
+	33554438: M_DbServerAlarms := 'No open ADS device connection found for ADSDevID xy';
+	67108865: M_DbServerAlarms := 'XML database';
+	134217729: M_DbServerAlarms := 	'ASCII database';
+ELSE
+	M_DbServerAlarms := 	'ADS Error';
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_OdbcAlarms" Id="{40c8d095-6600-4029-a14c-3bbd468beb3a}">
+      <Declaration><![CDATA[METHOD PROTECTED M_OdbcAlarms : STRING
+VAR_INPUT
+	sSQLState    : STRING(5);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF sSQLState = '1000' THEN  M_OdbcAlarms:= 'General warning';
+ELSIF sSQLState ='1001'	THEN M_OdbcAlarms:= 'Cursor operation conflict';
+ELSIF sSQLState ='1002'	THEN M_OdbcAlarms:= 'Disconnect error';
+ELSIF sSQLState ='1003'	THEN M_OdbcAlarms:= 'NULL value eliminated in set FUNCTION';
+ELSIF sSQLState ='1004'	THEN M_OdbcAlarms:= 'STRING data, right-truncated';
+ELSIF sSQLState ='1006'	THEN M_OdbcAlarms:= 'Privilege NOT revoked';
+ELSIF sSQLState ='1007'	THEN M_OdbcAlarms:= 'Privilege NOT granted';
+ELSIF sSQLState ='01S00' THEN M_OdbcAlarms:= 'Invalid connection STRING attribute';
+ELSIF sSQLState ='01S01' THEN M_OdbcAlarms:= 'Error in row';
+ELSIF sSQLState ='01S02' THEN M_OdbcAlarms:= 'Option value changed';
+ELSIF sSQLState ='01S06' THEN M_OdbcAlarms:= 'Attempt TO fetch before the result set returned the first rowset';
+ELSIF sSQLState ='01S07' THEN M_OdbcAlarms:= 'Fractional truncation';
+ELSIF sSQLState ='01S08' THEN M_OdbcAlarms:= 'Error saving File DSN';
+ELSIF sSQLState ='01S09' THEN M_OdbcAlarms:= 'Invalid keyword';
+ELSIF sSQLState ='7001'	THEN M_OdbcAlarms:= 'Wrong number OF parameters';
+ELSIF sSQLState ='7002'	THEN M_OdbcAlarms:= 'COUNT field incorrect';
+ELSIF sSQLState ='7005'	THEN M_OdbcAlarms:= 'Prepared statement not a cursor-specification';
+ELSIF sSQLState ='7006'	THEN M_OdbcAlarms:= 'Restricted data type attribute violation';
+ELSIF sSQLState ='7009'	THEN M_OdbcAlarms:= 'Invalid descriptor index';
+ELSIF sSQLState ='07S01' THEN M_OdbcAlarms:= 'Invalid use OF default parameter';
+ELSIF sSQLState ='8001'	THEN M_OdbcAlarms:= 'Client unable TO establish connection';
+ELSIF sSQLState ='8002'	THEN M_OdbcAlarms:= 'Connection name in use';
+ELSIF sSQLState ='8003'	THEN M_OdbcAlarms:= 'Connection not open';
+ELSIF sSQLState ='8004'	THEN M_OdbcAlarms:= 'Server rejected the connection';
+ELSIF sSQLState ='8007'	THEN M_OdbcAlarms:= 'Connection failure during transaction';
+ELSIF sSQLState ='08S01' THEN M_OdbcAlarms:= 'Communication link failure';
+ELSIF sSQLState ='21S01' THEN M_OdbcAlarms:= 'Insert value list does not match column list';
+ELSIF sSQLState ='21S02' THEN M_OdbcAlarms:= 'Degree of derived table does not match column list';
+ELSIF sSQLState ='22001' THEN M_OdbcAlarms:= 'String data, right-truncated';
+ELSIF sSQLState ='22002' THEN M_OdbcAlarms:= 'Indicator variable required but not supplied';
+ELSIF sSQLState ='22003' THEN M_OdbcAlarms:= 'Numeric value out of range';
+ELSIF sSQLState ='22007' THEN M_OdbcAlarms:= 'Invalid datetime format';
+ELSIF sSQLState ='22008' THEN M_OdbcAlarms:= 'Datetime field overflow';
+ELSIF sSQLState ='22012' THEN M_OdbcAlarms:= 'Division by zero';
+ELSIF sSQLState ='22015' THEN M_OdbcAlarms:= 'Interval field overflow';
+ELSIF sSQLState ='22018' THEN M_OdbcAlarms:= 'Invalid character value for cast specification';
+ELSIF sSQLState ='22019' THEN M_OdbcAlarms:= 'Invalid escape character';
+ELSIF sSQLState ='22025' THEN M_OdbcAlarms:= 'Invalid escape sequence';
+ELSIF sSQLState ='22026' THEN M_OdbcAlarms:= 'String data, length mismatch';
+ELSIF sSQLState ='23000' THEN M_OdbcAlarms:= 'Integrity constraint violation';
+ELSIF sSQLState ='24000' THEN M_OdbcAlarms:= 'Invalid cursor state';
+ELSIF sSQLState ='25000' THEN M_OdbcAlarms:= 'Invalid transaction state';
+ELSIF sSQLState ='25S01' THEN M_OdbcAlarms:= 'Transaction state';
+ELSIF sSQLState ='25S02' THEN M_OdbcAlarms:= 'Transaction is still active';
+ELSIF sSQLState ='25S03' THEN M_OdbcAlarms:= 'Transaction is rolled back';
+ELSIF sSQLState ='28000' THEN M_OdbcAlarms:= 'Invalid authorization specification';
+ELSIF sSQLState ='34000' THEN M_OdbcAlarms:= 'Invalid cursor name';
+ELSIF sSQLState ='3C000' THEN M_OdbcAlarms:= 'Duplicate cursor name';
+ELSIF sSQLState ='3D000' THEN M_OdbcAlarms:= 'Invalid catalog name';
+ELSIF sSQLState ='3F000' THEN M_OdbcAlarms:= 'Invalid schema name';
+ELSIF sSQLState ='40001' THEN M_OdbcAlarms:= 'Serialization failure';
+ELSIF sSQLState ='40002' THEN M_OdbcAlarms:= 'Integrity constraint violation';
+ELSIF sSQLState ='40003' THEN M_OdbcAlarms:= 'Statement completion unknown';
+ELSIF sSQLState ='42000' THEN M_OdbcAlarms:= 'Syntax error or access violation';
+ELSIF sSQLState ='42S01' THEN M_OdbcAlarms:= 'Base table or view already exists';
+ELSIF sSQLState ='42S02' THEN M_OdbcAlarms:= 'Base table or view not found';
+ELSIF sSQLState ='42S11' THEN M_OdbcAlarms:= 'Index already exists';
+ELSIF sSQLState ='42S12' THEN M_OdbcAlarms:= 'Index not found';
+ELSIF sSQLState ='42S21' THEN M_OdbcAlarms:= 'Column already exists';
+ELSIF sSQLState ='42S22' THEN M_OdbcAlarms:= 'Column not found';
+ELSIF sSQLState ='44000' THEN M_OdbcAlarms:= 'WITH CHECK OPTION violation';
+ELSIF sSQLState ='HY000' THEN M_OdbcAlarms:= 'General error';
+ELSIF sSQLState ='HY001' THEN M_OdbcAlarms:= 'Memory allocation error';
+ELSIF sSQLState ='HY003' THEN M_OdbcAlarms:= 'Invalid application buffer type';
+ELSIF sSQLState ='HY004' THEN M_OdbcAlarms:= 'Invalid SQL data type';
+ELSIF sSQLState ='HY007' THEN M_OdbcAlarms:= 'Associated statement is not prepared';
+ELSIF sSQLState ='HY008' THEN M_OdbcAlarms:= 'Operation canceled';
+ELSIF sSQLState ='HY009' THEN M_OdbcAlarms:= 'Invalid use of null pointer';
+ELSIF sSQLState ='HY010' THEN M_OdbcAlarms:= 'Function sequence error';
+ELSIF sSQLState ='HY011' THEN M_OdbcAlarms:= 'Attribute cannot be set now';
+ELSIF sSQLState ='HY012' THEN M_OdbcAlarms:= 'Invalid transaction operation code';
+ELSIF sSQLState ='HY013' THEN M_OdbcAlarms:= 'Memory management error';
+ELSIF sSQLState ='HY014' THEN M_OdbcAlarms:= 'Limit on the number of handles exceeded';
+ELSIF sSQLState ='HY015' THEN M_OdbcAlarms:= 'No cursor name available';
+ELSIF sSQLState ='HY016' THEN M_OdbcAlarms:= 'Cannot modify an implementation row descriptor';
+ELSIF sSQLState ='HY017' THEN M_OdbcAlarms:= 'Invalid use of an automatically allocated descriptor handle';
+ELSIF sSQLState ='HY018' THEN M_OdbcAlarms:= 'Server declined cancel request';
+ELSIF sSQLState ='HY019' THEN M_OdbcAlarms:= 'Non-character and non-binary data sent in pieces';
+ELSIF sSQLState ='HY020' THEN M_OdbcAlarms:= 'Attempt to concatenate a null value';
+ELSIF sSQLState ='HY021' THEN M_OdbcAlarms:= 'Inconsistent descriptor information';
+ELSIF sSQLState ='HY024' THEN M_OdbcAlarms:= 'Invalid attribute value';
+ELSIF sSQLState ='HY090' THEN M_OdbcAlarms:= 'Invalid string or buffer length';
+ELSIF sSQLState ='HY091' THEN M_OdbcAlarms:= 'Invalid descriptor field identifier';
+ELSIF sSQLState ='HY092' THEN M_OdbcAlarms:= 'Invalid attribute/option identifier';
+ELSIF sSQLState ='HY095' THEN M_OdbcAlarms:= 'Function type out of range';
+ELSIF sSQLState ='HY096' THEN M_OdbcAlarms:= 'Invalid information type';
+ELSIF sSQLState ='HY097' THEN M_OdbcAlarms:= 'Column type out of range';
+ELSIF sSQLState ='HY098' THEN M_OdbcAlarms:= 'Scope type out of range';
+ELSIF sSQLState ='HY099' THEN M_OdbcAlarms:= 'Nullable type out of range';
+ELSIF sSQLState ='HY100' THEN M_OdbcAlarms:= 'Uniqueness option type out of range';
+ELSIF sSQLState ='HY101' THEN M_OdbcAlarms:= 'Accuracy option type out of range';
+ELSIF sSQLState ='HY103' THEN M_OdbcAlarms:= 'Invalid retrieval code';
+ELSIF sSQLState ='HY104' THEN M_OdbcAlarms:= 'Invalid precision or scale value';
+ELSIF sSQLState ='HY105' THEN M_OdbcAlarms:= 'Invalid parameter type';
+ELSIF sSQLState ='HY106' THEN M_OdbcAlarms:= 'Fetch type out of range';
+ELSIF sSQLState ='HY107' THEN M_OdbcAlarms:= 'Row value out of range';
+ELSIF sSQLState ='HY109' THEN M_OdbcAlarms:= 'Invalid cursor position';
+ELSIF sSQLState ='HY110' THEN M_OdbcAlarms:= 'Invalid driver completion';
+ELSIF sSQLState ='HY111' THEN M_OdbcAlarms:= 'Invalid bookmark value';
+ELSIF sSQLState ='HYC00' THEN M_OdbcAlarms:= 'Optional feature not implemented';
+ELSIF sSQLState ='HYT00' THEN M_OdbcAlarms:= 'Timeout expired';
+ELSIF sSQLState ='HYT01' THEN M_OdbcAlarms:= 'Connection timeout expired';
+ELSIF sSQLState ='IM001' THEN M_OdbcAlarms:= 'Driver does not support this function';
+ELSIF sSQLState ='IM002' THEN M_OdbcAlarms:= 'Data source name not found and no default driver specified';
+ELSIF sSQLState ='IM003' THEN M_OdbcAlarms:= 'Specified driver could not be loaded';
+ELSIF sSQLState ='IM004' THEN M_OdbcAlarms:= 'Driver(s) SQLAllocHandle on SQL_HANDLE_ENV failed';
+ELSIF sSQLState ='IM005' THEN M_OdbcAlarms:= 'Driver(s) SQLAllocHandle on SQL_HANDLE_DBC failed';
+ELSIF sSQLState ='IM006' THEN M_OdbcAlarms:= 'Driver(s) SQLSetConnectAttr failed';
+ELSIF sSQLState ='IM007' THEN M_OdbcAlarms:= 'No data source OR driver specified, dialog prohibited';
+ELSIF sSQLState ='IM008' THEN M_OdbcAlarms:= 'Dialog failed';
+ELSIF sSQLState ='IM009' THEN M_OdbcAlarms:= 'Unable TO load translation DLL';
+ELSIF sSQLState ='IM010' THEN M_OdbcAlarms:= 'Data source name too long';
+ELSIF sSQLState ='IM011' THEN M_OdbcAlarms:= 'Driver name too long';
+ELSIF sSQLState ='IM012' THEN M_OdbcAlarms:= 'DRIVER keyword syntax error';
+ELSIF sSQLState ='IM013' THEN M_OdbcAlarms:= 'Trace file error';
+ELSIF sSQLState ='IM014' THEN M_OdbcAlarms:= 'Invalid name OF File DSN';
+ELSIF sSQLState ='IM015' THEN M_OdbcAlarms:= 'Corrupt file data source';
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Name" Id="{ae10a11c-2a4f-41a2-8d19-055b14a2ad08}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Name : String[15]]]></Declaration>
+      <Get Name="Get" Id="{c0fcc6dd-71dd-4184-b6f4-31b3c42d2ddc}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Name := _Name;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{3f99146d-9903-4f95-b686-aec886f2e905}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Name := Name;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_Tc2Database">
+      <LineId Id="207" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.Alarm.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.AlarmMute.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.Description.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.Description.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.M_DbAlarms">
+      <LineId Id="173" Count="1" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="6" Count="166" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="176" Count="1" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="350" Count="1" />
+      <LineId Id="353" Count="0" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="355" Count="0" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="357" Count="0" />
+      <LineId Id="356" Count="0" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="359" Count="0" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="363" Count="8" />
+      <LineId Id="362" Count="0" />
+      <LineId Id="374" Count="1" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="361" Count="0" />
+      <LineId Id="376" Count="3" />
+      <LineId Id="387" Count="1" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="179" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.M_DbServerAlarms">
+      <LineId Id="7" Count="16" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.M_OdbcAlarms">
+      <LineId Id="15" Count="6" />
+      <LineId Id="133" Count="108" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.Name.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Tc2Database.Name.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_PMLIndicators" Id="{920b00ea-4641-4ad4-a199-a7e80ed7c443}">
+    <Declaration><![CDATA[TYPE ST_PMLIndicators :
+STRUCT
+	LS_H_Output					: DINT;								//Matrix Output
+	RedLamp						: BOOL;								//Red Lamp
+	AmberLamp					: BOOL;								//Amber Lamp
+	BlueLamp					: BOOL;								//Blue Lamp
+	GreenLamp					: BOOL;								//Green Lamp
+	PB_Output					: DINT;								//Matrix Output
+	RedButton					: BOOL;								//Red Button 
+	AmberButton					: BOOL;								//Amber Button 
+	BlueButton					: BOOL;								//Blue Button 
+	GreenButton					: BOOL;								//Green Button 
+	Horn						: BOOL;								//Horn
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

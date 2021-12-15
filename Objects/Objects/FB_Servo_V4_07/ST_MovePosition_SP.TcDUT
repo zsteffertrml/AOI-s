@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_MovePosition_SP" Id="{58ed6f6e-c114-46b8-9cf0-ac31275fdc88}">
+    <Declaration><![CDATA[TYPE ST_MovePosition_SP :
+STRUCT
+	MoveType			: E_ServoMoveType;		//Move Type Configuration of Positional Move
+	Position			: REAL;					//Position Value to Move to
+	Velocity			: REAL := 50;			//Velocity Value of Move
+	Acceleration		: REAL := 1;			//Accleration Value of Move
+	Deceleration		: REAL := 1;			//Deceleration Value of Move
+	Jerk				: REAL := 25;			//Jerk Value of Move
+	Timeout				: REAL := 5;			//Time Allowed for Move to Complete
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

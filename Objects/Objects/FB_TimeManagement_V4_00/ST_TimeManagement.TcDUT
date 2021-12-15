@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_TimeManagement" Id="{a0dc85a8-67c7-4d14-a785-cc91b9368668}">
+    <Declaration><![CDATA[TYPE ST_TimeManagement :
+STRUCT
+	CurrentTime		: TIMESTRUCT;			//Current System time
+	UpTime			: ST_ElapsedTime;		//Time since last reset
+	SecondPulse		: BOOL;					//On for one cycle every second
+	MinutePulse		: BOOL;					//On for one cycle every minute
+	HourPulse		: BOOL;					//On for one cycle every hour
+	MidnightPulse	: BOOL;					//On for one cycle at Midnight
+	FirstCycle		: BOOL;					//True when executing first scan
+	ScanTime		: REAL;					//Last scan time (Seconds)	
+	SecondsNow		: DWORD;				//Current DateTime in Seconds
+	SlowFlash		: BOOL;					//Slow Flash Strobe
+	FastFlash		: BOOL;					//Fast Flash Strobe
+	PulseFlash		: BOOL;					//Pulse Flash Strobe
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

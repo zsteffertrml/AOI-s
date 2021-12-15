@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_CamTable" Id="{a0f802b0-37b5-4fdb-9c7c-6c77f0976289}">
+    <Declaration><![CDATA[TYPE ST_CamTable :
+STRUCT
+	TableData 		: ARRAY [0..360,0..1] OF LREAL;
+	Id				: UDINT;
+	Rows			: UDINT;
+	Periodic		: BOOL;
+	Generate		: BOOL;
+	//StartMode		: MC_StartMode;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

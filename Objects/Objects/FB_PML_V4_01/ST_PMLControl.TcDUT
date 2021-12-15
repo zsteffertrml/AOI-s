@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_PMLControl" Id="{744e06c8-2b51-49fb-894a-77a661f3c4fa}">
+    <Declaration><![CDATA[TYPE ST_PMLControl :
+STRUCT
+	UnitMode					: DINT := 1;				//Unit Mode Target
+	UnitModeChangeRequest		: BOOL;						//Request Unit Mode Change
+	CurMachSpeed				: REAL;						//Current Machine Speed
+	MatReady					: ARRAY[0..31] OF BOOL;		//Materials Ready
+	MatLow						: ARRAY[0..31] OF BOOL;		//Materials Low
+	State						: DINT;						//Target State
+	StateChangeRequest			: BOOL;						//State Change Request
+	CntrlCmd					: DINT;						//Control Command
+	EquipmentInterLockBlocked 	: BOOL;						//Indicates that a downstream system is not able to accept product
+	EquipmentInterLockStarved	: BOOL;						//Indicates that an upstream system is not able to supply product
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

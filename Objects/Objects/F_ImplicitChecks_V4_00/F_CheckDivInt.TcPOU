@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.6">
+  <POU Name="F_CheckDivInt" Id="{36e81023-df22-4a76-8017-92a1a7b6adaf}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_CheckDivInt : INT
+VAR_INPUT
+	divisor: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF divisor = 0 THEN
+	F_CheckDivInt:=1;
+ELSE
+	F_CheckDivInt:=divisor;
+END_IF;
+]]></ST>
+    </Implementation>
+    <LineIds Name="F_CheckDivInt">
+      <LineId Id="20" Count="0" />
+      <LineId Id="22" Count="2" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_Spindle" Id="{15def22a-0dc5-4149-a20f-56f5186596e6}">
+    <Declaration><![CDATA[TYPE ST_Spindle :
+STRUCT
+	M3				: BOOL;			//Rotate Clockwise
+	M4				: BOOL;			//Rotate Counter-Clockwise
+	M5				: BOOL;			//Stop Spindle
+	M7				: BOOL;			//Close Tool Holder
+	M8				: BOOL;			//Tool Release
+	M9				: BOOL;			//Tool Engage
+	M19				: BOOL;			//Position Spindle (Closed-loop positioning only)
+	ComVelocity		: DINT;			//Command Velocity
+	ActVelocity		: LREAL;		//Actual Velocity
+	Position		: DINT;			//Position Feedback
+	Error			: BOOL;			//Error State
+	ErrorID			: UDINT;		//Error ID
+	Warm			: BOOL;			//Spindle is Warm
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

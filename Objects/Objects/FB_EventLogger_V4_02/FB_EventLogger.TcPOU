@@ -1,0 +1,357 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_EventLogger" Id="{3141e6b9-7191-4e1a-9a89-fdec80061c67}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_EventLogger
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_LogAlarm" Id="{ede62fd4-5e43-4e07-9f6a-4d0885435558}">
+      <Declaration><![CDATA[METHOD PROTECTED M_LogAlarm : BOOL;
+VAR_INPUT
+	Execute				: BOOL;					//Trigger Event
+	Arg0				: STRING;				//Event Argument {0}
+	Arg1				: STRING;				//Event Argument {1}
+	Arg2				: STRING;				//Event Argument {2}
+	EventEntry			: TcEventEntry;			//Alarm Event Entry
+	Clear				: BOOL;					// Set Event to Not Raised
+END_VAR
+VAR_INST
+	{attribute 'tc_no_symbol'}
+	_fb_Alarm			: FB_TcAlarm;			//Event Logger Function Block
+	{attribute 'tc_no_symbol'}
+	_TcEventState		: USINT;     			//Event Logger State
+	{attribute 'tc_no_symbol'}
+	_TcEventError		: BOOL;      			//Event Text Request Error
+	{attribute 'tc_no_symbol'}
+	_TcEventText		: STRING;      			//Event Text
+	{attribute 'tc_no_symbol'}
+	_TcEventTrig		: R_TRIG;    			//Event Trigger
+	{attribute 'tc_no_symbol'}
+	_TcClearEventTrig	: R_TRIG;    			//Clear Event Trigger
+	{attribute 'tc_no_symbol'}
+	_TextRequest		: BOOL;					//Text Request Successful
+END_VAR
+VAR_IN_OUT
+	Message				: STRING;				//Active Alarm Message
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_TcEventTrig(CLK:=Execute);
+CASE _TcEventState OF
+0://Wait for Alarm
+	IF _TcEventTrig.Q  AND EventEntry.nEventId > 0 THEN
+		_TcEventState := 1;
+	END_IF
+1://Queue Alarm Event
+	_fb_Alarm.CreateEx(stEventEntry:= EventEntry, bWithConfirmation:= TRUE, ipSourceInfo:= 0);
+	_TcEventState := 2;
+2://Set Arguments
+	_fb_Alarm.ipArguments.Clear();
+	IF (Arg1 = '' AND Arg0 <> '') THEN
+		_fb_Alarm.ipArguments.AddString(Arg0);
+	ELSIF (Arg2 = '' AND Arg1 <> '') THEN
+		_fb_Alarm.ipArguments.AddString(Arg0).AddString(Arg1);
+	ELSIF (Arg0 <> '' AND Arg1 <> '' AND Arg2 <> '') THEN
+		_fb_Alarm.ipArguments.AddString(Arg0).AddString(Arg1).AddString(Arg2);
+	END_IF
+	_TcEventState := 3;
+3://Raise Alarm
+	_fb_Alarm.Raise(0);
+	_TcEventError := FALSE;
+	_TcEventState := 4;
+4://Request Event Text
+	_TextRequest := _fb_Alarm.RequestEventText(nLangId:= 1033, sResult:= _TcEventText, nResultSize:= SIZEOF(_TcEventText), bError=> _TcEventError, hrErrorCode=>);
+	IF _TextRequest OR _TcEventError THEN
+		IF _TcEventError THEN _TcEventText := 'Error Requesting Event Text'; END_IF
+		_TcEventState := 5;
+	END_IF
+5://Return Active Alarm Message
+	Message := CONCAT('[',CONCAT(UDINT_TO_STRING(_fb_Alarm.nEventId),CONCAT('] - ', _TcEventText)));	
+	_TcEventState := 0;
+END_CASE
+
+// Clears Alarm
+_TcClearEventTrig(CLK:= Clear AND NOT Execute);
+IF _TcClearEventTrig.Q THEN
+	_fb_Alarm.Clear(nTimeStamp:= 0, bResetConfirmation:= FALSE);
+	_fb_Alarm.Confirm(nTimeStamp:= 0);
+END_IF
+
+//Alarm Logging Not Busy
+M_LogAlarm := _TcEventState = 0;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_LogAlert" Id="{5d872714-9490-4730-b31e-6e833b8d6c4e}">
+      <Declaration><![CDATA[METHOD PROTECTED M_LogAlert : BOOL;
+VAR_INPUT
+	Execute				: BOOL;					//Trigger Event
+	Arg0				: STRING;				//Event Argument {0}
+	Arg1				: STRING;				//Event Argument {1}
+	Arg2				: STRING;				//Event Argument {2}
+	EventEntry			: TcEventEntry;			//Alert Event Entry 
+END_VAR
+VAR_INST
+	{attribute 'tc_no_symbol'}
+	_fb_Alert			: FB_TcMessage;			//Event Logger Function Block
+	{attribute 'tc_no_symbol'}
+	_TcEventState		: USINT;     			//Event Logger State
+	{attribute 'tc_no_symbol'}
+	_TcEventError		: BOOL;      			//Event Text Request Error
+	{attribute 'tc_no_symbol'}
+	_TcEventText		: STRING;      			//Event Text
+	{attribute 'tc_no_symbol'}
+	_TcEventTrig		: R_TRIG;    			//Event Trigger
+	{attribute 'tc_no_symbol'}
+	_TextRequest		: BOOL;					//Text Request Successful
+END_VAR
+VAR_IN_OUT
+	Message				: STRING;				//Active Alert Message
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_TcEventTrig(CLK:=Execute);
+CASE _TcEventState OF
+0://Wait for Alert
+	IF _TcEventTrig.Q AND EventEntry.nEventId > 0 THEN
+		_TcEventState := 1;
+	END_IF
+1://Queue Alert Event
+	_fb_Alert.CreateEx(stEventEntry:= EventEntry, ipSourceInfo:= 0);
+	_TcEventState := 2;
+2://Set Arguments
+	_fb_Alert.ipArguments.Clear();
+	IF (Arg1 = '' AND Arg0 <> '') THEN
+		_fb_Alert.ipArguments.AddString(Arg0);
+	ELSIF (Arg2 = '' AND Arg1 <> '') THEN
+		_fb_Alert.ipArguments.AddString(Arg0).AddString(Arg1);
+	ELSIF (Arg0 <> '' AND Arg1 <> '' AND Arg2 <> '') THEN
+		_fb_Alert.ipArguments.AddString(Arg0).AddString(Arg1).AddString(Arg2);
+	END_IF
+	_TcEventState := 3;
+3://Raise Alert
+	_fb_Alert.Send(0);
+	_TcEventState := 4;
+4://Request Event Text
+	_TcEventError := FALSE;
+	_TextRequest:= _fb_Alert.RequestEventText(nLangId:= 1033, sResult:= _TcEventText, nResultSize:= SIZEOF(_TcEventText), bError=> _TcEventError, hrErrorCode=> ) ;
+	IF _TextRequest OR _TcEventError THEN
+		IF _TcEventError THEN Message := 'Error Requesting Event Text'; END_IF
+		_TcEventState := 5;
+	END_IF
+5://Return Active Alert Message
+	Message := CONCAT('[',CONCAT(UDINT_TO_STRING(_fb_Alert.nEventId),CONCAT('] - ', _TcEventText)));	
+	_TcEventState := 0;
+END_CASE
+
+//Alert Logging Not Busy
+M_LogAlert := _TcEventState = 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_LogMessage" Id="{bdc3e673-b52d-45d0-ae65-8828368e3f9e}">
+      <Declaration><![CDATA[METHOD PROTECTED M_LogMessage : BOOL;
+VAR_INPUT
+	Execute				: BOOL;					//Trigger Event
+	Arg0				: STRING;				//Event Argument {0}
+	Arg1				: STRING;				//Event Argument {1}
+	Arg2				: STRING;				//Event Argument {2}
+	EventEntry			: TcEventEntry;			//Alarm Event Entry 
+END_VAR
+VAR_INST
+	{attribute 'tc_no_symbol'}
+	_fb_Message			: FB_TcMessage;			//Event Logger Function Block
+	{attribute 'tc_no_symbol'}
+	_TcEventState		: USINT;     			//Event Logger State
+	{attribute 'tc_no_symbol'}
+	_TcEventTrig		: R_TRIG;    			//Event Trigger
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_TcEventTrig(CLK:=Execute);
+CASE _TcEventState OF
+0://Wait for Message
+	IF _TcEventTrig.Q AND EventEntry.nEventId > 0 THEN
+		_TcEventState := 1;
+	END_IF
+1://Queue Message Event
+	_fb_Message.CreateEx(EventEntry, 0);
+	_TcEventState := 2;
+2://Set Arguments
+	_fb_Message.ipArguments.Clear();
+	IF (Arg1 = '' AND Arg0 <> '') THEN
+		_fb_Message.ipArguments.AddString(Arg0);
+	ELSIF (Arg2 = '' AND Arg1 <> '') THEN
+		_fb_Message.ipArguments.AddString(Arg0).AddString(Arg1);
+	ELSIF (Arg0 <> '' AND Arg1 <> '' AND Arg2 <> '') THEN
+		_fb_Message.ipArguments.AddString(Arg0).AddString(Arg1).AddString(Arg2);
+	END_IF
+	_TcEventState := 3;
+3://Raise Warning
+	_fb_Message.Send(0);
+	_TcEventState := 0;
+END_CASE
+
+//Message Logging Not Busy
+M_LogMessage := _TcEventState = 0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_LogWarning" Id="{e4487627-dcbe-47c4-a193-0d4e5f9e2710}">
+      <Declaration><![CDATA[METHOD PROTECTED M_LogWarning : BOOL;
+VAR_INPUT
+	Execute				: BOOL;					//Trigger Event
+	Arg0				: STRING;				//Event Argument {0}
+	Arg1				: STRING;				//Event Argument {1}
+	Arg2				: STRING;				//Event Argument {2}
+	EventEntry			: TcEventEntry;			//Alarm Event Entry 
+	Clear				: BOOL;					//Set Event to Not Raised
+END_VAR
+VAR_INST
+	{attribute 'tc_no_symbol'}
+	_fb_Warning			: FB_TcAlarm;			//Event Logger Function Block
+	{attribute 'tc_no_symbol'}
+	_TcEventState		: USINT;     			//Event Logger State
+	{attribute 'tc_no_symbol'}
+	_TcEventError		: BOOL;      			//Event Text Request Error
+	{attribute 'tc_no_symbol'}
+	_TcEventText		: STRING;      			//Event Text
+	{attribute 'tc_no_symbol'}
+	_TcEventTrig		: R_TRIG;    			//Event Trigger
+	{attribute 'tc_no_symbol'}
+	_TcClearEventTrig	: R_TRIG;    			//Clear Event Trigger
+	{attribute 'tc_no_symbol'}
+	_TextRequest		: BOOL;					//Text Request Successful
+END_VAR
+VAR_IN_OUT
+	Message				: STRING;				//Active Warning Message
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_TcEventTrig(CLK:=Execute);
+CASE _TcEventState OF
+0://Wait for Warning
+	IF _TcEventTrig.Q AND EventEntry.nEventId > 0 THEN
+		_TcEventState := 1;
+	END_IF
+1://Queue Warning Event
+	_fb_Warning.CreateEx(stEventEntry:= EventEntry,bWithConfirmation:= TRUE, ipSourceInfo:= 0);
+	_TcEventState := 2;
+2://Set Arguments
+	_fb_Warning.ipArguments.Clear();
+	IF (Arg1 = '' AND Arg0 <> '') THEN
+		_fb_Warning.ipArguments.AddString(Arg0);
+	ELSIF (Arg2 = '' AND Arg1 <> '') THEN
+		_fb_Warning.ipArguments.AddString(Arg0).AddString(Arg1);
+	ELSIF (Arg0 <> '' AND Arg1 <> '' AND Arg2 <> '') THEN
+		_fb_Warning.ipArguments.AddString(Arg0).AddString(Arg1).AddString(Arg2);
+	END_IF
+	_TcEventState := 3;
+3://Raise Warning
+	_fb_Warning.Raise(0);
+	_TcEventState := 4;
+4://Request Event Text
+	_TcEventError := FALSE;
+	_TextRequest := _fb_Warning.RequestEventText(nLangId:= 1033, sResult:= _TcEventText, nResultSize:= SIZEOF(_TcEventText), bError=> _TcEventError, hrErrorCode=> ) ;
+	IF _TextRequest OR _TcEventError THEN
+		IF _TcEventError THEN Message := 'Error Requesting Event Text'; END_IF
+		_TcEventState := 5;
+	END_IF
+5://Return Active Warning Message
+	Message := CONCAT('[',CONCAT(UDINT_TO_STRING(_fb_Warning.nEventId),CONCAT('] - ', _TcEventText)));
+	_TcEventState := 0;
+END_CASE
+	
+// Clears Alarm
+_TcClearEventTrig(CLK:=Clear AND NOT Execute);
+IF _TcClearEventTrig.Q THEN
+	_fb_Warning.Clear(nTimeStamp:= 0, bResetConfirmation:= FALSE);
+	_fb_Warning.Confirm(nTimeStamp:= 0);
+END_IF
+
+//Warning Logging Not Busy
+M_LogWarning := _TcEventState = 0;
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_EventLogger">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLogger.M_LogAlarm">
+      <LineId Id="16" Count="4" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="27" Count="2" />
+      <LineId Id="197" Count="1" />
+      <LineId Id="176" Count="3" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="30" Count="2" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="33" Count="1" />
+      <LineId Id="293" Count="0" />
+      <LineId Id="35" Count="4" />
+      <LineId Id="290" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="218" Count="0" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="319" Count="1" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="99" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLogger.M_LogAlert">
+      <LineId Id="16" Count="2" />
+      <LineId Id="196" Count="1" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="151" Count="5" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="30" Count="4" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="35" Count="6" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="199" Count="1" />
+      <LineId Id="198" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLogger.M_LogMessage">
+      <LineId Id="6" Count="2" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="16" Count="2" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="88" Count="5" />
+      <LineId Id="19" Count="3" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="115" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLogger.M_LogWarning">
+      <LineId Id="16" Count="2" />
+      <LineId Id="200" Count="1" />
+      <LineId Id="23" Count="1" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="149" Count="5" />
+      <LineId Id="29" Count="5" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="227" Count="0" />
+      <LineId Id="35" Count="5" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="174" Count="6" />
+      <LineId Id="203" Count="1" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="173" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

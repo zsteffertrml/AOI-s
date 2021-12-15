@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_PMLModualCommands" Id="{784a6c3e-dc80-470e-a4dc-4416e75be687}">
+    <Declaration><![CDATA[TYPE ST_PMLModualCommands :
+STRUCT
+	Cmd_Reset				: BOOL;			//Reset
+	Sts_Resetting_SC		: BOOL;			//Resetting State Complete
+	Cmd_Start				: BOOL;			//Start
+	Sts_Starting_SC			: BOOL;			//Starting State Complete
+	Cmd_Stop				: BOOL;			//Stop
+	Sts_Stopping_SC			: BOOL;			//Stopping State Complete
+	Cmd_Hold				: BOOL;			//Hold
+	Sts_Holding_SC			: BOOL;			//Holding State Complete
+	Cmd_UnHold				: BOOL;			//UnHold
+	Sts_UnHolding_SC		: BOOL;			//UnHolding State Complete
+	Cmd_Suspend				: BOOL;			//Suspend
+	Sts_Suspending_SC		: BOOL;			//Suspending State Complete
+	Cmd_UnSuspend			: BOOL;			//UnSuspend
+	Sts_UnSuspending_SC		: BOOL;			//UnSuspending State Complete
+	Cmd_Abort				: BOOL;			//Abort
+	Sts_Aborting_SC			: BOOL;			//Aborting State Complete
+	Cmd_Clear				: BOOL;			//Clear
+	Sts_Clearing_SC			: BOOL;			//Clearing State Complete
+	Sts_Execute_SC			: BOOL;			//Execute State Complete
+	Sts_Completing_SC		: BOOL;			//Completing State Complete
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

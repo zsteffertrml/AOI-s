@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="E_ServerDataExchangeSteps" Id="{9903b217-e0f8-48c6-86db-1332db1f440b}">
+    <Declaration><![CDATA[TYPE E_ServerDataExchangeSteps :
+(
+	SERVER_DATAEXCHANGE_STATE_IDLE,
+	SERVER_DATAEXCHANGE_STATE_SEND_START,
+	SERVER_DATAEXCHANGE_STATE_SEND_WAIT,
+	SERVER_DATAEXCHANGE_STATE_RECEIVE_START,
+	SERVER_DATAEXCHANGE_STATE_RECEIVE_WAIT,
+	SERVER_DATAEXCHANGE_STATE_ERROR
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

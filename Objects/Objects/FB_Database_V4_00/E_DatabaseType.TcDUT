@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <DUT Name="E_DatabaseType" Id="{e6b8a3c8-2a62-43bc-b09c-67b227a0b1a3}">
+    <Declaration><![CDATA[TYPE E_DatabaseType :(
+	eMicrosoftSqlCompact				:=  0,
+	eMicrosoftSql						:=  1,
+	eMicrosoftAccess 					:=  2,
+	eMySQL								:=  3,
+	eOracle 							:=  4,
+	eDB2								:=  5,
+	ePostgreSQL							:=  6,
+	eInterbase 							:=  7,
+	eXml								:=  8,
+	eAscii								:=  10
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

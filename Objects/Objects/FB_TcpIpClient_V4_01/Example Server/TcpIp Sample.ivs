@@ -1,0 +1,494 @@
+<?xml version="1.0"?>
+<!--  Friday, February 19, 2021 14:59:59  -->
+
+<Investigation
+	Version="7020707"
+	Lock="0"
+	Pwd=""
+	SpcReportEveryNRuns="0"
+	SpcReportFile="SpcReport.txt">
+<Variables>
+<Var
+	RtName="_txstr"
+	RtType="1"
+	RtId="230571376"
+	ValType="259">
+<Obj
+	Type="4"
+	Val="test123"
+/>
+</Var>
+<Var
+	RtName="_rxstr"
+	RtType="1"
+	RtId="230571552"
+	ValType="259">
+<Obj
+	Type="4"
+	Val="test123"
+/>
+</Var>
+</Variables>
+<BgScripts>
+<Script
+	Name="BgScriptA"
+/>
+<Script
+	Name="BgScriptB"
+/>
+<Script
+	Name="BgScriptC"
+/>
+<Script
+	Name="BgScriptD"
+/>
+<Script
+	Name="BgScriptE"
+/>
+</BgScripts>
+<Calibrations
+/>
+<FileIoMgr>
+<FileIo
+	RtId="229526272"
+/>
+<FileIo
+	RtId="229529440"
+/>
+<FileIo
+	RtId="229526800"
+/>
+<FileIo
+	RtId="229528912"
+/>
+<FileIo
+	RtId="229533136"
+/>
+<FileIo
+	RtId="229527328"
+/>
+<FileIo
+	RtId="229531024"
+/>
+<FileIo
+	RtId="229527856"
+/>
+<FileIo
+	RtId="229529968"
+/>
+<FileIo
+	RtId="229531552"
+/>
+</FileIoMgr>
+<SerialIoMgr>
+<SerialIo
+	BaudRate="9600"
+	DataBits="8"
+	Parity="0"
+	StopBits="0"
+	FlowControl="0"
+/>
+</SerialIoMgr>
+<UdpIoMgr
+/>
+<TcpIoMgr>
+<Elements>
+<TcpIo
+	RtName="[None]"
+	RtType="7"
+	RtId="229748544"
+	ValType="1024"
+	Port="1024"
+	HostnameOrIP="Server"
+	IsServer="1">
+<Obj
+	Type="10">
+<Val
+	HdlType="0"
+/>
+</Obj>
+</TcpIo>
+</Elements>
+<Elements>
+<TcpIo
+	RtName="[None]"
+	RtType="7"
+	RtId="229743920"
+	ValType="1024"
+	Port="1025"
+	HostnameOrIP="Server"
+	IsServer="1">
+<Obj
+	Type="10">
+<Val
+	HdlType="0"
+/>
+</Obj>
+</TcpIo>
+</Elements>
+</TcpIoMgr>
+<ModbusIoMgr
+/>
+<Alignments>
+<Alignment
+	RtName="CA2320_CircleFinder"
+	RtType="7"
+	RtId="231195680"
+	ValType="1026"
+	RotatorAngle="0"
+	RotatorX="1036.1402375533285"
+	RotatorY="743.98245272951624"
+	TransX="1.6522656024803837"
+	TransY="-23.339676977623526">
+<Obj
+	Type="0"
+/>
+<Readings
+/>
+</Alignment>
+<Alignment
+	RtName="CA2350_CircleFinder"
+	RtType="7"
+	RtId="231051648"
+	ValType="1026"
+	RotatorAngle="0"
+	RotatorX="1031.4352111816406"
+	RotatorY="760.8289794921875"
+	TransX="-4.5775146484375"
+	TransY="-22.377044677734375">
+<Obj
+	Type="0"
+/>
+<Readings
+/>
+</Alignment>
+</Alignments>
+<CLMngr
+/>
+<GeFanucMgr
+/>
+<HmiIoMgr
+	addr="127.0.0.1"
+	port="5085"
+	run="0"
+/>
+<ProfinetMgr
+	name=""
+	guid=""
+	ip=""
+/>
+<Subroutines>
+<Sub
+	RtName="Main"
+	RtType="5"
+	RtId="230462384"
+	ParentInstr="0"
+	InstrType="2"
+	Collapsed="0"
+	ExecFlags="0">
+<Inputs
+/>
+<Outputs
+/>
+<Params
+/>
+<Instructions>
+<Instruction
+	FormulaId="_Ipe_System_CSleep_"
+	RtName="SleepA"
+	RtType="5"
+	RtId="367458640"
+	ParentInstr="0"
+	InstrType="17"
+	Collapsed="0"
+	Tag="TcpIp_Sample-SleepA">
+<Inputs>
+<id0
+	RtId="232435952"
+	Connected="0">
+<Obj
+	Type="3"
+	Val="100"
+/>
+</id0>
+</Inputs>
+<Outputs
+/>
+<Params
+/>
+</Instruction>
+<Instruction
+	RtName="recv line A"
+	RtType="5"
+	RtId="367461520"
+	ParentInstr="0"
+	InstrType="1001"
+	Collapsed="0">
+<Inputs>
+<id0
+	RtId="364004048"
+	Connected="229748544">
+<Obj
+	Type="0"
+/>
+</id0>
+<id1
+	RtId="364005968"
+	Connected="0">
+<Obj
+	Type="3"
+	Val="10"
+/>
+</id1>
+<id2
+	RtId="364004288"
+	Connected="0">
+<Obj
+	Type="3"
+	Val="100"
+/>
+</id2>
+</Inputs>
+<Outputs>
+<id0
+	RtId="372727056"
+	ConnVar="230571552"
+	Watch="0"
+	SpcOn="0"
+	Hidden="0"
+	Lmark="0">
+<Obj
+	Type="4"
+	Val="test123"
+/>
+<Annot
+	Type="6"
+	X="-1"
+	Y="-1"
+	Clr="0"
+	Text="text: test123"
+	Display="1"
+	Highlight="0"
+	So="0">
+<Coord
+	Size="0"
+	Value=""
+/>
+</Annot>
+</id0>
+<id1
+	RtId="372727984"
+	ConnVar="0"
+	Watch="0"
+	SpcOn="0"
+	Hidden="0"
+	Lmark="0">
+<Obj
+	Type="3"
+	Val="80"
+/>
+<Annot
+	Type="6"
+	X="-1"
+	Y="-1"
+	Clr="0"
+	Text="bytes recvd: 80.00"
+	Display="1"
+	Highlight="0"
+	So="0">
+<Coord
+	Size="0"
+	Value=""
+/>
+</Annot>
+</id1>
+<id2
+	RtId="372723344"
+	ConnVar="0"
+	Watch="0"
+	SpcOn="0"
+	Hidden="0"
+	Lmark="0">
+<Obj
+	Type="1"
+	Val="1"
+/>
+<Annot
+	Type="6"
+	X="-1"
+	Y="-1"
+	Clr="0"
+	Text="result: True"
+	Display="1"
+	Highlight="0"
+	So="0">
+<Coord
+	Size="0"
+	Value=""
+/>
+</Annot>
+</id2>
+<id3
+	RtId="372729840"
+	ConnVar="0"
+	Watch="0"
+	SpcOn="0"
+	Hidden="0"
+	Lmark="0">
+<Obj
+	Type="1"
+	Val="0"
+/>
+<Annot
+	Type="6"
+	X="-1"
+	Y="-1"
+	Clr="0"
+	Text="incomplete: False"
+	Display="1"
+	Highlight="0"
+	So="0">
+<Coord
+	Size="0"
+	Value=""
+/>
+</Annot>
+</id3>
+</Outputs>
+<Params
+/>
+</Instruction>
+<Instruction
+	RtName="if bytes recieved"
+	RtType="5"
+	RtId="370610688"
+	ParentInstr="0"
+	InstrType="10"
+	Collapsed="0"
+	Condition="TRUE ">
+<Inputs
+/>
+<Outputs
+/>
+<Params
+/>
+</Instruction>
+<Instruction
+	RtName="send line A"
+	RtType="5"
+	RtId="367462800"
+	ParentInstr="0"
+	InstrType="1000"
+	Collapsed="0">
+<Inputs>
+<id0
+	RtId="364006448"
+	Connected="229748544">
+<Obj
+	Type="0"
+/>
+</id0>
+<id1
+	RtId="364006928"
+	Connected="230571376">
+<Obj
+	Type="4"
+	Val=""
+/>
+</id1>
+</Inputs>
+<Outputs>
+<id0
+	RtId="372722416"
+	ConnVar="0"
+	Watch="0"
+	SpcOn="0"
+	Hidden="0"
+	Lmark="0">
+<Obj
+	Type="3"
+	Val="7"
+/>
+<Annot
+	Type="6"
+	X="-1"
+	Y="-1"
+	Clr="0"
+	Text="bytes sent: 7.00"
+	Display="1"
+	Highlight="0"
+	So="0">
+<Coord
+	Size="0"
+	Value=""
+/>
+</Annot>
+</id0>
+<id1
+	RtId="372733552"
+	ConnVar="0"
+	Watch="0"
+	SpcOn="0"
+	Hidden="0"
+	Lmark="0">
+<Obj
+	Type="1"
+	Val="1"
+/>
+<Annot
+	Type="6"
+	X="-1"
+	Y="-1"
+	Clr="0"
+	Text="result: True"
+	Display="1"
+	Highlight="0"
+	So="0">
+<Coord
+	Size="0"
+	Value=""
+/>
+</Annot>
+</id1>
+</Outputs>
+<Params
+/>
+</Instruction>
+</Instructions>
+<Structure>
+<Branch
+	Parent="0">
+<Children>
+<Child
+	Id="230462384"
+/>
+</Children>
+</Branch>
+<Branch
+	Parent="230462384">
+<Children>
+<Child
+	Id="367458640"
+/>
+<Child
+	Id="367461520"
+/>
+<Child
+	Id="370610688"
+/>
+</Children>
+</Branch>
+<Branch
+	Parent="370610688">
+<Children>
+<Child
+	Id="367462800"
+/>
+</Children>
+</Branch>
+</Structure>
+</Sub>
+</Subroutines>
+<Watched
+/>
+</Investigation>

@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_Example" Id="{1632e716-2532-4717-94ba-def0bfb884f1}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Example EXTENDS FB_Tc2Database 
+VAR_INPUT
+	Execute					: BOOL;//Execute Stored Procedure
+	TimeStamp				: DT;//Current Time
+	Uid						: STRING(31);//8 Byte Unique Mac Id
+	DataOk					: USINT;//0=Fail, 1=Pass, 2=NA
+	VisionOk				: USINT;//0=Fail, 1=Pass, 2=NA
+	VisionCause				: USINT;//Cause of Vision Failure if Applicable	
+	VisionScore				: USINT;//0-100% Tag Find Score	
+	GetCycles				: BOOL;//Get Tag Cycle Anount
+	GetAge					: BOOL;//Get Tag Age
+	GetRecord				: BOOL;//Get Record History
+	Expired					: BOOL;//Tag Expired
+END_VAR
+VAR_IN_OUT         
+	Record					: ARRAY[0..29] OF ST_Example;
+END_VAR
+VAR_OUTPUT
+	Busy					: BOOL;
+END_VAR
+VAR
+	_State					: UINT;
+	_fb_SPRecordArray		: FB_DBStoredProceduresRecordArray;
+	_ParameterList			: ARRAY[0..9] OF ST_DBParameter;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Name :=  'Insert';
+Description:= 'FB_Example';
+
+_fb_SPRecordArray(
+	sNetID:= '', 
+	hDBID:= 1, 
+	sProcedureName:= 'USP_Example',
+	cbParameterList:= SIZEOF(_ParameterList),
+	pParameterList:= ADR(_ParameterList),
+	nStartIndex:= 0, 
+	nRecordCount:= SIZEOF(Record)/SIZEOF(Record[0]), 
+	bExecute:= , 
+	tTimeout:= T#10S, 
+	pDestAddr:=  ADR(Record),
+	cbRecordArraySize:= SIZEOF(Record), 
+	bBusy=> Busy, 
+	bError=> , 
+	nErrID=> , 
+	sSQLState=> , 
+	nRecords=> );
+
+CASE _State OF	
+0:	
+	IF Execute AND NOT Busy THEN
+		_State:= 1;
+	END_IF
+1:
+	_ParameterList[0].sParameterName := '@TimeStamped';
+	_ParameterList[0].eParameterDataType := eDBColumn_DateTime;
+	_ParameterList[0].eParameterType := eDBParameter_Input;
+	_ParameterList[0].cbParameterValue := SIZEOF(TimeStamp);
+	_ParameterList[0].pParameterValue := ADR(TimeStamp);
+	
+	_ParameterList[1].sParameterName := '@Uid';
+	_ParameterList[1].eParameterDataType := eDBColumn_NVarChar;
+	_ParameterList[1].eParameterType := eDBParameter_Input;
+	_ParameterList[1].cbParameterValue := SIZEOF(Uid);
+	_ParameterList[1].pParameterValue := ADR(Uid);
+	
+	_ParameterList[2].sParameterName := '@DataOk';
+	_ParameterList[2].eParameterDataType := eDBColumn_TinyInt;
+	_ParameterList[2].eParameterType := eDBParameter_Input;
+	_ParameterList[2].cbParameterValue := SIZEOF(DataOk);
+	_ParameterList[2].pParameterValue := ADR(DataOk);
+	
+	_ParameterList[3].sParameterName := '@VisionOk';
+	_ParameterList[3].eParameterDataType := eDBColumn_TinyInt;
+	_ParameterList[3].eParameterType := eDBParameter_Input;
+	_ParameterList[3].cbParameterValue := SIZEOF(VisionOk);
+	_ParameterList[3].pParameterValue := ADR(VisionOk);
+	
+	_ParameterList[4].sParameterName := '@VisionCause';
+	_ParameterList[4].eParameterDataType := eDBColumn_TinyInt;
+	_ParameterList[4].eParameterType := eDBParameter_Input;
+	_ParameterList[4].cbParameterValue := SIZEOF(VisionCause);
+	_ParameterList[4].pParameterValue := ADR(VisionCause);
+	
+	_ParameterList[5].sParameterName := '@VisionScore';
+	_ParameterList[5].eParameterDataType := eDBColumn_TinyInt;
+	_ParameterList[5].eParameterType := eDBParameter_Input;
+	_ParameterList[5].cbParameterValue := SIZEOF(VisionScore);
+	_ParameterList[5].pParameterValue := ADR(VisionScore);
+	
+	_ParameterList[6].sParameterName := '@GetCycles';
+	_ParameterList[6].eParameterDataType := eDBColumn_Bit;
+	_ParameterList[6].eParameterType := eDBParameter_Input;
+	_ParameterList[6].cbParameterValue := SIZEOF(GetCycles);
+	_ParameterList[6].pParameterValue := ADR(GetCycles);
+	
+	_ParameterList[7].sParameterName := '@GetAge';
+	_ParameterList[7].eParameterDataType := eDBColumn_Bit;
+	_ParameterList[7].eParameterType := eDBParameter_Input;
+	_ParameterList[7].cbParameterValue := SIZEOF(GetAge);
+	_ParameterList[7].pParameterValue := ADR(GetAge);
+	
+	_ParameterList[8].sParameterName := '@GetRecord';
+	_ParameterList[8].eParameterDataType := eDBColumn_Bit;
+	_ParameterList[8].eParameterType := eDBParameter_Input;
+	_ParameterList[8].cbParameterValue := SIZEOF(GetRecord);
+	_ParameterList[8].pParameterValue := ADR(GetRecord);
+	
+	_ParameterList[9].sParameterName := '@Expired';
+	_ParameterList[9].eParameterDataType := eDBColumn_Bit;
+	_ParameterList[9].eParameterType := eDBParameter_Input;
+	_ParameterList[9].cbParameterValue := SIZEOF(Expired);
+	_ParameterList[9].pParameterValue := ADR(Expired);
+	_State:= 2;
+	
+2:
+	_fb_SPRecordArray.bExecute := TRUE;
+	_State:= 3;
+3:
+	IF NOT Execute THEN
+		_fb_SPRecordArray.bExecute := FALSE;
+		_State:= 0;
+	END_IF
+	
+END_CASE
+
+M_AlarmMonitor(Error:= _fb_SPRecordArray.bError, ErrorID:= _fb_SPRecordArray.nErrID, DBSQLError:= _fb_SPRecordArray.sSQLState);
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Example">
+      <LineId Id="308" Count="0" />
+      <LineId Id="310" Count="0" />
+      <LineId Id="309" Count="0" />
+      <LineId Id="108" Count="6" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="118" Count="1" />
+      <LineId Id="287" Count="1" />
+      <LineId Id="120" Count="22" />
+      <LineId Id="149" Count="5" />
+      <LineId Id="331" Count="0" />
+      <LineId Id="333" Count="3" />
+      <LineId Id="332" Count="0" />
+      <LineId Id="337" Count="0" />
+      <LineId Id="339" Count="3" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="365" Count="0" />
+      <LineId Id="367" Count="3" />
+      <LineId Id="366" Count="0" />
+      <LineId Id="395" Count="0" />
+      <LineId Id="397" Count="3" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="401" Count="0" />
+      <LineId Id="403" Count="3" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="407" Count="0" />
+      <LineId Id="409" Count="3" />
+      <LineId Id="408" Count="0" />
+      <LineId Id="437" Count="0" />
+      <LineId Id="439" Count="3" />
+      <LineId Id="438" Count="0" />
+      <LineId Id="155" Count="10" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="244" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="207" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

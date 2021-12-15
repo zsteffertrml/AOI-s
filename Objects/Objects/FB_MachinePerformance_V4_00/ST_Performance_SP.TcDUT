@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_Performance_SP" Id="{5b53476f-0582-4a2e-bd5e-a2dd3727e920}">
+    <Declaration><![CDATA[TYPE ST_Performance_SP :
+STRUCT
+	Current_Time							: DINT;
+	Current									: ST_TIMEMANAGEMENT;
+	Today_Time								: DINT;
+	Today									: ST_TIMEMANAGEMENT;
+	Today_Freq								: DINT;
+	Today_Percent							: REAL;
+	LifeTime_Time							: DINT;
+	LifeTime								: ST_TIMEMANAGEMENT;
+	LifeTime_Freq							: DINT;
+	LifeTime_Percent						: REAL;	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

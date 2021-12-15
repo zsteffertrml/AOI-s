@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_MachinePerformance" Id="{0a9d6574-246c-4b0c-aa5f-e5beed6c842e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FINAL FB_MachinePerformance
+VAR_IN_OUT
+	Perf										: ARRAY [0..18] OF  ST_Performance_SP;
+	Control										: ST_System;
+	Data_Reset									: BOOL;
+END_VAR
+VAR
+	_Scratchpad									: DINT;
+	_PointerLast								: DINT;
+	_Current_Time_T 							: TIME;
+	_Current_Time_DT 							: DATE_AND_TIME;
+	_Current_Time_TS							: TIMESTRUCT;
+	_Today_Time_T								: TIME;
+	_Today_Time_DT								: DATE_AND_TIME;
+	_Today_Time_TS								: TIMESTRUCT;
+	_LifeTime_Time_T							: TIME;
+	_LifeTime_Time_DT							: DATE_AND_TIME;
+	_LifeTime_Time_TS							: TIMESTRUCT;
+	_Perf_Today_Time_T							: TIME;
+	_Perf_Today_Time_DT							: DATE_AND_TIME;
+	_Perf_Today_Time_TS							: TIMESTRUCT;
+	_Perf_LifeTime_Time_T						: TIME;
+	_Perf_LifeTime_Time_DT						: DATE_AND_TIME;
+	_Perf_LifeTime_Time_TS						: TIMESTRUCT;
+	_i											: SINT;
+	_j											: SINT;
+	_k											: SINT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF Control.SystemTime.SecondPulse THEN
+	Perf[Control.PackMLState.CurrentState].Current_Time := Perf[Control.PackMLState.CurrentState].Current_Time+1;
+	Perf[Control.PackMLState.CurrentState].Today_Time := Perf[Control.PackMLState.CurrentState].Today_Time+1;
+	Perf[Control.PackMLState.CurrentState].LifeTime_Time := Perf[Control.PackMLState.CurrentState].LifeTime_Time+1;
+	
+	_Current_Time_T := DINT_TO_TIME(Perf[Control.PackMLState.CurrentState].Current_Time)*1000;
+    _Current_Time_DT := TIME_TO_DT(_Current_Time_T);
+    _Current_Time_TS := DT_TO_SYSTEMTIME(_Current_Time_DT);
+    IF Perf[Control.PackMLState.CurrentState].Current_Time < 86400 THEN
+    	Perf[Control.PackMLState.CurrentState].Current.CurrentTime := MOVE(_Current_Time_TS);
+    	Perf[Control.PackMLState.CurrentState].Current.CurrentTime.wDay := 0;
+    ELSE
+    	Perf[Control.PackMLState.CurrentState].Current.CurrentTime := MOVE(_Current_Time_TS);
+    	Perf[Control.PackMLState.CurrentState].Current.CurrentTime.wDay := _Current_Time_TS.wDay-1;
+    END_IF	
+	
+	_Today_Time_T := DINT_TO_TIME(Perf[Control.PackMLState.CurrentState].Today_Time)*1000;
+    _Today_Time_DT := TIME_TO_DT(_Today_Time_T);
+    _Today_Time_TS := DT_TO_SYSTEMTIME(_Today_Time_DT);
+    IF Perf[Control.PackMLState.CurrentState].Today_Time < 86400 THEN
+    	Perf[Control.PackMLState.CurrentState].Today.CurrentTime := MOVE(_Today_Time_TS);
+    	Perf[Control.PackMLState.CurrentState].Today.CurrentTime.wDay := 0;
+    ELSE
+    	Perf[Control.PackMLState.CurrentState].Today.CurrentTime := MOVE(_Today_Time_TS);
+    	Perf[Control.PackMLState.CurrentState].Today.CurrentTime.wDay := _Today_Time_TS.wDay-1;
+    END_IF
+	
+	_LifeTime_Time_T := DINT_TO_TIME(Perf[Control.PackMLState.CurrentState].LifeTime_Time)*1000;
+    _LifeTime_Time_DT := TIME_TO_DT(_LifeTime_Time_T);
+    _LifeTime_Time_TS := DT_TO_SYSTEMTIME(_LifeTime_Time_DT);
+    IF Perf[Control.PackMLState.CurrentState].LifeTime_Time < 86400 THEN
+    	Perf[Control.PackMLState.CurrentState].LifeTime.CurrentTime := MOVE(_LifeTime_Time_TS);
+    	Perf[Control.PackMLState.CurrentState].LifeTime.CurrentTime.wDay := 0;
+    ELSE
+    	Perf[Control.PackMLState.CurrentState].LifeTime.CurrentTime := MOVE(_LifeTime_Time_TS);
+    	Perf[Control.PackMLState.CurrentState].LifeTime.CurrentTime.wDay := _LifeTime_Time_TS.wDay-1;
+    END_IF	
+	
+	IF Control.PackMLState.CurrentState <> _PointerLast THEN
+		_PointerLast := Control.PackMLState.CurrentState;
+		Perf[Control.PackMLState.CurrentState].Today_Freq := Perf[Control.PackMLState.CurrentState].Today_Freq +1;
+	END_IF
+	
+	Perf[0].Today_Time := Perf[1].Today_Time+Perf[2].Today_Time+Perf[3].Today_Time+Perf[4].Today_Time+Perf[5].Today_Time+Perf[6].Today_Time +Perf[7].Today_Time+Perf[8].Today_Time+Perf[9].Today_Time+Perf[10].Today_Time+Perf[11].Today_Time +Perf[12].Today_Time+Perf[13].Today_Time+Perf[14].Today_Time+Perf[15].Today_Time+Perf[16].Today_Time+Perf[17].Today_Time;
+	Perf[0].LifeTime_Time := Perf[1].LifeTime_Time+Perf[2].LifeTime_Time+Perf[3].LifeTime_Time+Perf[4].LifeTime_Time+Perf[5].LifeTime_Time+Perf[6].LifeTime_Time+Perf[7].LifeTime_Time+Perf[8].LifeTime_Time+Perf[9].LifeTime_Time+Perf[10].LifeTime_Time+Perf[11].LifeTime_Time+Perf[12].LifeTime_Time+Perf[13].LifeTime_Time+Perf[14].LifeTime_Time+Perf[15].LifeTime_Time+Perf[16].LifeTime_Time+Perf[17].LifeTime_Time;
+	
+	F_CheckDivDint(Perf[0].LifeTime_Time);
+	F_CheckDivDint(Perf[0].Today_Time);
+	
+	FOR _j:= 1 TO 17 BY 1 DO
+		IF Perf[_j].Today_Time > 0 THEN
+			Perf[_j].Today_Percent := DINT_TO_REAL((Perf[_j].Today_Time*100)/Perf[0].Today_Time);
+		ELSIF Perf[_j].Today_Time = 0 THEN
+			Perf[_j].Today_Percent := 0;
+		END_IF
+		Perf[_j].LifeTime_Percent := DINT_TO_REAL((Perf[_j].LifeTime_Time*100)/Perf[0].LifeTime_Time);
+	END_FOR
+	
+	_Perf_Today_Time_T := DINT_TO_TIME(Perf[0].Today_Time)*1000;
+    _Perf_Today_Time_DT := TIME_TO_DT(_Perf_Today_Time_T);
+    _Perf_Today_Time_TS := DT_TO_SYSTEMTIME(_Perf_Today_Time_DT);
+    IF  Perf[0].Today_Time < 86400 THEN
+    	Perf[0].Today.CurrentTime := MOVE(_Current_Time_TS);
+    	Perf[0].Today.CurrentTime.wDay := 0;
+    ELSE
+    	Perf[0].Today.CurrentTime := MOVE(_Current_Time_TS);
+    	Perf[0].Today.CurrentTime.wDay := _Current_Time_TS.wDay-1;
+    END_IF	
+	
+	_Perf_LifeTime_Time_T := DINT_TO_TIME(Perf[0].LifeTime_Time)*1000;
+    _Perf_LifeTime_Time_DT := TIME_TO_DT(_Perf_LifeTime_Time_T);
+    _Perf_LifeTime_Time_TS := DT_TO_SYSTEMTIME(_Perf_LifeTime_Time_DT);
+    IF  Perf[0].LifeTime_Time < 86400 THEN
+    	Perf[0].LifeTime.CurrentTime := MOVE(_Current_Time_TS);
+    	Perf[0].LifeTime.CurrentTime.wDay := 0;
+    ELSE
+    	Perf[0].LifeTime.CurrentTime := MOVE(_Current_Time_TS);
+    	Perf[0].LifeTime.CurrentTime.wDay := _Current_Time_TS.wDay-1;
+    END_IF	
+	
+	F_CheckIndexBounds_DINT(0,17,_Scratchpad);
+	FOR _j:= 0 TO 17 BY 1 DO
+		IF Perf[_j].Current_Time > 0 AND Control.PackMLState.CurrentState <> _j THEN
+			_Scratchpad := 0;
+			Perf[_Scratchpad].Current_Time := 0;
+			Perf[_Scratchpad].Current.CurrentTime.wDay := 0;
+			Perf[_Scratchpad].Current.CurrentTime.wHour:= 0;
+			Perf[_Scratchpad].Current.CurrentTime.wMinute := 0;
+		END_IF
+	END_FOR
+END_IF
+
+IF Data_Reset = TRUE THEN
+	FOR _k:= 0 TO 17 BY 1 DO
+		Perf[_k].Current_Time := 0;
+		Perf[_k].Current.CurrentTime.wHour := 0;
+		Perf[_k].Current.CurrentTime.wMinute := 0;
+		Perf[_k].Current.CurrentTime.wSecond := 0;
+		Perf[_k].Today_Time := 0;
+		Perf[_k].Today.CurrentTime.wHour := 0;
+		Perf[_k].Today.CurrentTime.wMinute := 0;
+		Perf[_k].Today.CurrentTime.wSecond := 0;
+	END_FOR
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_MachinePerformance">
+      <LineId Id="15" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="41" Count="10" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="65" Count="9" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="773" Count="0" />
+      <LineId Id="80" Count="8" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="92" Count="1" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="97" Count="1" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="592" Count="2" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="768" Count="3" />
+      <LineId Id="767" Count="0" />
+      <LineId Id="751" Count="0" />
+      <LineId Id="750" Count="0" />
+      <LineId Id="208" Count="9" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="777" Count="0" />
+      <LineId Id="234" Count="8" />
+      <LineId Id="589" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="588" Count="0" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="345" Count="3" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="349" Count="0" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="246" Count="1" />
+      <LineId Id="498" Count="0" />
+      <LineId Id="628" Count="0" />
+      <LineId Id="499" Count="2" />
+      <LineId Id="503" Count="0" />
+      <LineId Id="624" Count="2" />
+      <LineId Id="622" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

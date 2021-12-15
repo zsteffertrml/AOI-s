@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="E_CNC_Mode" Id="{de1d24f3-8729-4a87-929e-fc18b8ff6be5}">
+    <Declaration><![CDATA[TYPE E_CNC_Mode :(
+		STANDBY_MODE		:=  1,
+		AUTOMATIC_MODE 		:=  2,
+		MDI_MODE	 		:=  3,
+		MANUAL_MODE			:=  4,
+		REFERENCE_MODE		:=  5
+)UDINT;
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>
