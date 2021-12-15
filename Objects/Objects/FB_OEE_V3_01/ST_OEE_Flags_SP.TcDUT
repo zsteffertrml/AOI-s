@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_OEE_Flags_SP" Id="{7cfc29eb-639a-4437-b200-f6e480d01cc7}">
+    <Declaration><![CDATA[TYPE ST_OEE_Flags_SP :
+STRUCT
+	InfeedNotOK							: BOOL;				//Infeed supply below machine specification rate
+	OutfeedNotOK						: BOOL;				//Dwnstreem equipment is stopping the machine from running
+	GoodPiece							: BOOL;				//Good product
+	RejectPiece							: BOOL;				//Reject Product
+	BreakActive							: BOOL;				//Break active has been selected
+	GoodPiece_Increment					: DINT;				//Good piece increment rate
+	RejectPiece_Increment				: INT;				//Reject piece increment rate
+	TargetProductRate					: REAL;				//Target Product Rate Per Minute
+	TargetBoxRate						: REAL;				//Target Box Rate Per Minute
+	BreakActive_ALM						: BOOL; 		    //Break active alarm
+	InfeedTimer							: TON;				//Infeed Availability Timer
+	OutfeedTimer						: TON;				//Outfeed Availability Timer
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

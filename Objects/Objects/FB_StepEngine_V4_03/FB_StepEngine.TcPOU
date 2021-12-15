@@ -1,0 +1,1548 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_StepEngine" Id="{4fdbb4a1-3842-443f-89c2-dd769aeef5ad}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FINAL FB_StepEngine EXTENDS FB_EventLogger  
+VAR_INPUT
+	Size					: UINT;
+	Flags					: DWORD;
+END_VAR             		
+VAR_IN_OUT 
+	Control					: ST_System;
+	StepDesc				: ARRAY[*] OF STRING;
+	MatrixA					: ARRAY[*] OF DINT;
+	MatrixB					: ARRAY[*] OF DINT;
+	MatrixC					: ARRAY[*] OF DINT;
+	MatrixD					: ARRAY[*] OF DINT;
+	TimerSP					: ARRAY[*] OF REAL;         		
+END_VAR  
+VAR_OUTPUT          		
+	Outputs					: ARRAY[0..3] OF DINT; 
+END_VAR             		
+VAR      
+	_StepReq				: INT;
+	_DeviceAlarm			: BOOL;      		
+	_SeqInterface			: ST_SequenceInterface;         		
+	_StepTimeDn				: BOOL;
+	_StepTimeRun			: BOOL;
+	_StepChanged			: BOOL;
+	_Disabled				: BOOL;
+	_StepNum				: INT;
+	_StepNumChan			: INT;
+	_StepNumPrev			: INT;
+	_StepTime_ET			: REAL;
+	_StepTime_ETDT			: TIME;
+	_StepTimeLeft			: REAL;
+	_StepTimeLeftDT			: TIME;
+	_StepTimePrev_ET		: REAL;
+	_Message				: STRING;
+	_Alarm					: BOOL;	
+	_AlarmNum				: DINT;					
+	_Fault					: BOOL;									
+	_CurrentStep			: ARRAY[0..255] OF BOOL;
+	_HistoryIndex			: INT;
+END_VAR             		
+VAR PERSISTENT      	
+	_Name					: STRING[15];				
+	_Description			: STRING[40];	
+	_Disable				: BOOL;   			
+	_AlarmMute				: BOOL;						
+	_StepTime_PT			: REAL;
+	_LastActiveStep			: INT;
+	_History				: ARRAY[0..99] OF ST_SequenceHistory;	
+	_Variables				: ARRAY [0..9] OF ST_Variable;									
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[M_AlarmMonitor();
+F_CheckIndexBounds(0,UINT_TO_INT(Size),_StepNum);
+F_CheckIndexBounds_REAL(0,65534,_StepTime_ET);
+F_CheckIndexBounds_REAL(0,65534,_StepTime_PT);
+F_CheckIndexBounds_REAL(0,65534,_StepTimeLeft);
+
+IF  _Disable THEN
+	_StepNum := 0;
+	_Disabled := TRUE;
+	_Message := 'Sequence Disabled';
+ELSE
+	_StepNum := _StepReq;
+	_Disabled := FALSE;
+	_Message:= StepDesc[_StepNum];
+END_IF
+
+IF Control.PackMLState.Complete THEN
+	_LastActiveStep := 0;
+END_IF
+
+Outputs[0] := MatrixA[_StepNum];
+Outputs[1] := MatrixB[_StepNum];
+Outputs[2] := MatrixC[_StepNum];
+Outputs[3] := MatrixD[_StepNum];
+
+MEMSET(destAddr:= ADR(_CurrentStep), fillByte:= 0, n:= SIZEOF(_CurrentStep));
+_CurrentStep[_StepNum] := TRUE;
+
+IF _StepChanged THEN
+	_StepTime_PT := TimerSP[_StepNum];
+END_IF
+
+_StepTime_ET := _StepTime_ET + Control.SystemTime.ScanTime;
+_StepTime_ETDT := REAL_TO_TIME(_StepTime_ET);
+
+IF _StepNum <> _StepNumChan THEN
+	_StepTimePrev_ET := _StepTime_ET;
+	_StepTime_ET := 0;
+	_StepNumPrev := _StepNumChan;
+	IF MatrixA[_StepNumChan].31 = TRUE THEN _LastActiveStep := _StepNumChan; END_IF
+	IF MatrixA[_StepNumChan].30 = TRUE THEN _LastActiveStep := 0; END_IF	
+	_StepNumChan := _StepNum;
+	_StepChanged := TRUE;
+	_StepTimeDn := FALSE;	
+ELSE
+	IF _StepTime_ET <= _StepTime_PT THEN
+		_StepTimeLeft := _StepTime_PT - _StepTime_ET;
+		_StepTimeLeftDT := REAL_TO_TIME(_StepTimeLeft);
+	ELSE
+		_StepTimeDn := TRUE;
+	END_IF
+	_StepChanged := FALSE;	
+END_IF
+
+IF _StepTime_PT = 0 THEN
+	_StepTimeLeft := 0;
+	_StepTimeLeftDT := REAL_TO_TIME(_StepTimeLeft);
+END_IF
+
+_History[0].StepNum:= _StepNum;
+_History[0].StepTime:= _StepTime_ET;
+_History[0].Message:= _Message;
+	
+IF _StepNumPrev <> _History[1].StepNum THEN 
+	FOR _historyIndex:= 99 TO 2 BY -1 DO
+		_History[F_CheckIndexBounds(0,99,_historyIndex)]:= _History[F_CheckIndexBounds(0,99,_historyIndex)-1];
+	END_FOR
+	_History[1].StepNum:= _StepNumPrev;
+	_History[1].StepTime:= _StepTimePrev_ET;
+	_History[1].Message:= StepDesc[_StepNumPrev];
+END_IF
+]]></ST>
+    </Implementation>
+    <Property Name="Alarm" Id="{837ab50d-3215-4ed0-a93e-6651d97b3d28}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Alarm : Bool]]></Declaration>
+      <Get Name="Get" Id="{1c9c6dfd-b4ce-4428-9ce9-6c2f1ac6a132}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Alarm := _Alarm;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="AlarmMute" Id="{160223e5-9e2d-4eaa-81d1-9adae92b6c4c}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC AlarmMute : BOOL]]></Declaration>
+      <Set Name="Set" Id="{68a96057-a0af-4e79-84c1-e6ba000028f6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[AlarmMute := _AlarmMute;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="CurrentStep" Id="{2037412a-16f8-47af-af3e-793245d8f6a9}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC CurrentStep : REFERENCE TO ARRAY[0..255] OF BOOL]]></Declaration>
+      <Get Name="Get" Id="{39dda43d-52af-4f86-8bbb-681aa9fe8c87}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[CurrentStep REF= _CurrentStep; ]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Description" Id="{0f1f32f0-a82c-461c-a727-547d7f793953}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Description : String[40]]]></Declaration>
+      <Get Name="Get" Id="{90b27f05-48cd-4083-b14e-adf2035350be}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Description := _Description;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{37617139-61e1-44f0-b9b5-a6a1d7b28a26}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Description := Description;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="DeviceAlarm" Id="{3bc8205d-08de-448b-8620-de355da933cc}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC DeviceAlarm : BOOL]]></Declaration>
+      <Get Name="Get" Id="{7738ded8-563d-403e-a885-d4480570b89e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[DeviceAlarm :=_DeviceAlarm;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{60d9ec6b-e6ec-43fd-9fe0-328014683f9d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_DeviceAlarm := DeviceAlarm;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Disable" Id="{aaf760da-0cc1-4549-8735-8ee60af60cd8}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Disable : BOOL]]></Declaration>
+      <Set Name="Set" Id="{c89da68e-aec3-4029-aca2-5ee35067ee60}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Disable := Disable;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Disabled" Id="{5d573e8b-ce38-485d-9f8a-3f2d68a5acd2}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Disabled : BOOL]]></Declaration>
+      <Get Name="Get" Id="{a218fcc3-ce98-4739-9a41-dced224b0dc7}">
+        <Declaration><![CDATA[PUBLIC 
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Disabled := _Disabled;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{53537a12-e145-4039-aba4-0db12406a856}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Disabled := Disabled;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Fault" Id="{6ad063fc-0083-4977-8f2c-d2c052a23fa9}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Fault : Bool]]></Declaration>
+      <Set Name="Set" Id="{98a1f858-3f84-4b6f-b0e2-1522fc22fb4b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Fault := Fault;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="History" Id="{47d47c1c-f340-4bed-85ea-8cc19a900daf}">
+      <Declaration><![CDATA[PROPERTY PUBLIC History :REFERENCE to ARRAY[0..99] OF ST_SequenceHistory]]></Declaration>
+      <Get Name="Get" Id="{80016576-c89b-4cee-a2bb-2d6f914e144d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[History REF=_History;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="LastActiveStep" Id="{b4a1b963-433c-4a05-ac2d-c168021af49c}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC LastActiveStep : int]]></Declaration>
+      <Get Name="Get" Id="{c69b5b85-481f-48a0-9b99-b5c13dd85c40}">
+        <Declaration><![CDATA[PUBLIC 
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[LastActiveStep := _LastActiveStep;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{b94674cd-6e96-4dea-8b76-c024cde67b82}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_LastActiveStep := LastActiveStep;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="M_AlarmMonitor" Id="{e08c103d-6dec-40ba-9878-824a65d1445f}">
+      <Declaration><![CDATA[METHOD PROTECTED M_AlarmMonitor
+VAR_INPUT
+END_VAR
+VAR_INST
+END_VAR]]></Declaration>
+      <Implementation>
+        <NWL>
+          <XmlArchive>
+            <Data>
+              <o xml:space="preserve" t="NWLImplementationObject">
+                <v n="NetworkListComment">""</v>
+                <v n="DefaultViewMode">"Ld"</v>
+                <l2 n="NetworkList" cet="Network">
+                  <o>
+                    <v n="ILActive">false</v>
+                    <v n="FBDValid">false</v>
+                    <v n="ILValid">false</v>
+                    <l2 n="ILLines" />
+                    <v n="Comment">""</v>
+                    <v n="Title">""</v>
+                    <v n="Label">""</v>
+                    <v n="OutCommented">false</v>
+                    <l2 n="NetworkItems">
+                      <o t="BoxTreeDemux">
+                        <v n="VarId">491</v>
+                        <o n="Input" t="BoxTreeBox">
+                          <v n="BoxType">"AND"</v>
+                          <o n="Instance" t="Operand">
+                            <n n="Operand" />
+                            <v n="Type">""</v>
+                            <v n="Comment">""</v>
+                            <v n="SymbolComment">""</v>
+                            <v n="Address">""</v>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <v n="LValue">false</v>
+                            <v n="Boolean">false</v>
+                            <v n="IsInstance">true</v>
+                            <v n="Id">8L</v>
+                          </o>
+                          <o n="OutputItems" t="OutputItemList">
+                            <l2 n="OutputItems" />
+                          </o>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <n n="InputFlags" />
+                          <l2 n="InputItems" cet="BoxTreeOperand">
+                            <o>
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"_AlarmMute"</v>
+                                <v n="Type">"BOOL"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">1</v>
+                                  <v n="Fixed">true</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">true</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">11L</v>
+                              </o>
+                              <v n="Id">10L</v>
+                            </o>
+                            <o>
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"Control.Inputs.AlarmAck.Enabled"</v>
+                                <v n="Type">"BOOL"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">"%Q*"</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">1</v>
+                                  <v n="Fixed">true</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">true</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">13L</v>
+                              </o>
+                              <v n="Id">12L</v>
+                            </o>
+                          </l2>
+                          <o n="InputParam" t="ParamList">
+                            <l2 n="Names" />
+                            <l2 n="Types" />
+                          </o>
+                          <o n="OutputParam" t="ParamList">
+                            <l2 n="Names" />
+                            <l2 n="Types" />
+                          </o>
+                          <v n="CallType" t="Operator">And</v>
+                          <n n="EN" />
+                          <n n="ENO" />
+                          <n n="STSnippet" />
+                          <v n="ContainsExtensibleInputs">false</v>
+                          <v n="ProvidesSTSnippet">false</v>
+                          <v n="Id">9L</v>
+                        </o>
+                        <v n="Id">7L</v>
+                      </o>
+                      <o t="BoxTreeBox">
+                        <v n="BoxType">"MOVE"</v>
+                        <o n="Instance" t="Operand">
+                          <n n="Operand" />
+                          <v n="Type">""</v>
+                          <v n="Comment">""</v>
+                          <v n="SymbolComment">""</v>
+                          <v n="Address">""</v>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <v n="LValue">false</v>
+                          <v n="Boolean">false</v>
+                          <v n="IsInstance">true</v>
+                          <v n="Id">36L</v>
+                        </o>
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" cet="Operand">
+                            <n />
+                            <o>
+                              <v n="Operand">"_AlarmNum"</v>
+                              <v n="Type">"DINT"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">38L</v>
+                            </o>
+                          </l2>
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">false</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <n n="InputFlags" />
+                        <l2 n="InputItems">
+                          <o t="BoxTreeBox">
+                            <v n="BoxType">"AND"</v>
+                            <o n="Instance" t="Operand">
+                              <n n="Operand" />
+                              <v n="Type">""</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">true</v>
+                              <v n="Id">92L</v>
+                            </o>
+                            <o n="OutputItems" t="OutputItemList">
+                              <l2 n="OutputItems" />
+                            </o>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <n n="InputFlags" />
+                            <l2 n="InputItems">
+                              <o t="BoxTreeBox">
+                                <v n="BoxType">"EQ"</v>
+                                <o n="Instance" t="Operand">
+                                  <n n="Operand" />
+                                  <v n="Type">""</v>
+                                  <v n="Comment">""</v>
+                                  <v n="SymbolComment">""</v>
+                                  <v n="Address">""</v>
+                                  <o n="Flags" t="Flags">
+                                    <v n="Flags">0</v>
+                                    <v n="Fixed">false</v>
+                                    <v n="Extensible">false</v>
+                                  </o>
+                                  <v n="LValue">false</v>
+                                  <v n="Boolean">false</v>
+                                  <v n="IsInstance">true</v>
+                                  <v n="Id">41L</v>
+                                </o>
+                                <o n="OutputItems" t="OutputItemList">
+                                  <l2 n="OutputItems">
+                                    <n />
+                                  </l2>
+                                </o>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <n n="InputFlags" />
+                                <l2 n="InputItems">
+                                  <o t="BoxTreeDemux">
+                                    <v n="VarId">491</v>
+                                    <n n="Input" />
+                                    <v n="Id">43L</v>
+                                  </o>
+                                  <o t="BoxTreeOperand">
+                                    <o n="Operand" t="Operand">
+                                      <v n="Operand">"_AlarmNum"</v>
+                                      <v n="Type">"DINT"</v>
+                                      <v n="Comment">""</v>
+                                      <v n="SymbolComment">""</v>
+                                      <v n="Address">""</v>
+                                      <o n="Flags" t="Flags">
+                                        <v n="Flags">0</v>
+                                        <v n="Fixed">false</v>
+                                        <v n="Extensible">false</v>
+                                      </o>
+                                      <v n="LValue">false</v>
+                                      <v n="Boolean">false</v>
+                                      <v n="IsInstance">false</v>
+                                      <v n="Id">45L</v>
+                                    </o>
+                                    <v n="Id">44L</v>
+                                  </o>
+                                  <o t="BoxTreeOperand">
+                                    <o n="Operand" t="Operand">
+                                      <v n="Operand">"0"</v>
+                                      <v n="Type">"INT"</v>
+                                      <v n="Comment">""</v>
+                                      <v n="SymbolComment">""</v>
+                                      <v n="Address">""</v>
+                                      <o n="Flags" t="Flags">
+                                        <v n="Flags">0</v>
+                                        <v n="Fixed">false</v>
+                                        <v n="Extensible">false</v>
+                                      </o>
+                                      <v n="LValue">false</v>
+                                      <v n="Boolean">false</v>
+                                      <v n="IsInstance">false</v>
+                                      <v n="Id">47L</v>
+                                    </o>
+                                    <v n="Id">46L</v>
+                                  </o>
+                                </l2>
+                                <o n="InputParam" t="ParamList">
+                                  <l2 n="Names" cet="String">
+                                    <v>EN</v>
+                                  </l2>
+                                  <l2 n="Types" cet="String">
+                                    <v>BOOL</v>
+                                  </l2>
+                                </o>
+                                <o n="OutputParam" t="ParamList">
+                                  <l2 n="Names" cet="String">
+                                    <v></v>
+                                  </l2>
+                                  <l2 n="Types" cet="String">
+                                    <v>BOOL</v>
+                                  </l2>
+                                </o>
+                                <v n="CallType" t="Operator">Eq</v>
+                                <v n="EN">true</v>
+                                <v n="ENO">false</v>
+                                <n n="STSnippet" />
+                                <v n="ContainsExtensibleInputs">false</v>
+                                <v n="ProvidesSTSnippet">false</v>
+                                <v n="Id">42L</v>
+                              </o>
+                              <o t="BoxTreeOperand">
+                                <o n="Operand" t="Operand">
+                                  <v n="Operand">"_Fault"</v>
+                                  <v n="Type">"BOOL"</v>
+                                  <v n="Comment">""</v>
+                                  <v n="SymbolComment">"Fault"</v>
+                                  <v n="Address">""</v>
+                                  <o n="Flags" t="Flags">
+                                    <v n="Flags">0</v>
+                                    <v n="Fixed">true</v>
+                                    <v n="Extensible">false</v>
+                                  </o>
+                                  <v n="LValue">false</v>
+                                  <v n="Boolean">true</v>
+                                  <v n="IsInstance">false</v>
+                                  <v n="Id">95L</v>
+                                </o>
+                                <v n="Id">94L</v>
+                              </o>
+                            </l2>
+                            <o n="InputParam" t="ParamList">
+                              <l2 n="Names" />
+                              <l2 n="Types" />
+                            </o>
+                            <o n="OutputParam" t="ParamList">
+                              <l2 n="Names" />
+                              <l2 n="Types" />
+                            </o>
+                            <v n="CallType" t="Operator">And</v>
+                            <n n="EN" />
+                            <n n="ENO" />
+                            <n n="STSnippet" />
+                            <v n="ContainsExtensibleInputs">false</v>
+                            <v n="ProvidesSTSnippet">false</v>
+                            <v n="Id">93L</v>
+                          </o>
+                          <o t="BoxTreeOperand">
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"1001"</v>
+                              <v n="Type">"INT"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">53L</v>
+                            </o>
+                            <v n="Id">52L</v>
+                          </o>
+                        </l2>
+                        <o n="InputParam" t="ParamList">
+                          <l2 n="Names" cet="String">
+                            <v>EN</v>
+                          </l2>
+                          <l2 n="Types" cet="String">
+                            <v>BOOL</v>
+                          </l2>
+                        </o>
+                        <o n="OutputParam" t="ParamList">
+                          <l2 n="Names" cet="String">
+                            <v>ENO</v>
+                            <v></v>
+                          </l2>
+                          <l2 n="Types" cet="String">
+                            <v>BOOL</v>
+                            <v></v>
+                          </l2>
+                        </o>
+                        <v n="CallType" t="Operator">Move</v>
+                        <v n="EN">true</v>
+                        <v n="ENO">true</v>
+                        <n n="STSnippet" />
+                        <v n="ContainsExtensibleInputs">false</v>
+                        <v n="ProvidesSTSnippet">false</v>
+                        <v n="Id">37L</v>
+                      </o>
+                      <o t="BoxTreeDemux">
+                        <v n="VarId">492</v>
+                        <o n="Input" t="BoxTreeBox">
+                          <v n="BoxType">"NE"</v>
+                          <o n="Instance" t="Operand">
+                            <n n="Operand" />
+                            <v n="Type">""</v>
+                            <v n="Comment">""</v>
+                            <v n="SymbolComment">""</v>
+                            <v n="Address">""</v>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <v n="LValue">false</v>
+                            <v n="Boolean">false</v>
+                            <v n="IsInstance">true</v>
+                            <v n="Id">55L</v>
+                          </o>
+                          <o n="OutputItems" t="OutputItemList">
+                            <l2 n="OutputItems">
+                              <n />
+                            </l2>
+                          </o>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <n n="InputFlags" />
+                          <l2 n="InputItems">
+                            <o t="BoxTreeDemux">
+                              <v n="VarId">491</v>
+                              <n n="Input" />
+                              <v n="Id">57L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"_AlarmNum"</v>
+                                <v n="Type">"DINT"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">59L</v>
+                              </o>
+                              <v n="Id">58L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"0"</v>
+                                <v n="Type">"INT"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">""</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">0</v>
+                                  <v n="Fixed">false</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">false</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">61L</v>
+                              </o>
+                              <v n="Id">60L</v>
+                            </o>
+                          </l2>
+                          <o n="InputParam" t="ParamList">
+                            <l2 n="Names" cet="String">
+                              <v>EN</v>
+                            </l2>
+                            <l2 n="Types" cet="String">
+                              <v>BOOL</v>
+                            </l2>
+                          </o>
+                          <o n="OutputParam" t="ParamList">
+                            <l2 n="Names" cet="String">
+                              <v></v>
+                            </l2>
+                            <l2 n="Types" cet="String">
+                              <v>BOOL</v>
+                            </l2>
+                          </o>
+                          <v n="CallType" t="Operator">Ne</v>
+                          <v n="EN">true</v>
+                          <v n="ENO">false</v>
+                          <n n="STSnippet" />
+                          <v n="ContainsExtensibleInputs">false</v>
+                          <v n="ProvidesSTSnippet">false</v>
+                          <v n="Id">56L</v>
+                        </o>
+                        <v n="Id">54L</v>
+                      </o>
+                      <o t="BoxTreeAssign">
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" cet="Operand">
+                            <o>
+                              <v n="Operand">"_Alarm"</v>
+                              <v n="Type">"BOOL"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">true</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">63L</v>
+                            </o>
+                          </l2>
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">false</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <o n="RValue" t="BoxTreeDemux">
+                          <v n="VarId">492</v>
+                          <n n="Input" />
+                          <v n="Id">62L</v>
+                        </o>
+                        <v n="Id">64L</v>
+                      </o>
+                      <o t="BoxTreeAssign">
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" cet="Operand">
+                            <o>
+                              <v n="Operand">"Control.Outputs.Alarm"</v>
+                              <v n="Type">"BOOL"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">"Machine has an alarm active"</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">2</v>
+                                <v n="Fixed">true</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">true</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">70L</v>
+                            </o>
+                          </l2>
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">false</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <o n="RValue" t="BoxTreeBox">
+                          <v n="BoxType">"AND"</v>
+                          <o n="Instance" t="Operand">
+                            <n n="Operand" />
+                            <v n="Type">""</v>
+                            <v n="Comment">""</v>
+                            <v n="SymbolComment">""</v>
+                            <v n="Address">""</v>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <v n="LValue">false</v>
+                            <v n="Boolean">false</v>
+                            <v n="IsInstance">true</v>
+                            <v n="Id">65L</v>
+                          </o>
+                          <o n="OutputItems" t="OutputItemList">
+                            <l2 n="OutputItems" />
+                          </o>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <n n="InputFlags" />
+                          <l2 n="InputItems">
+                            <o t="BoxTreeDemux">
+                              <v n="VarId">492</v>
+                              <n n="Input" />
+                              <v n="Id">67L</v>
+                            </o>
+                            <o t="BoxTreeOperand">
+                              <o n="Operand" t="Operand">
+                                <v n="Operand">"Control.Outputs.Alarm"</v>
+                                <v n="Type">"BOOL"</v>
+                                <v n="Comment">""</v>
+                                <v n="SymbolComment">"Machine has an alarm active"</v>
+                                <v n="Address">""</v>
+                                <o n="Flags" t="Flags">
+                                  <v n="Flags">1</v>
+                                  <v n="Fixed">true</v>
+                                  <v n="Extensible">false</v>
+                                </o>
+                                <v n="LValue">false</v>
+                                <v n="Boolean">true</v>
+                                <v n="IsInstance">false</v>
+                                <v n="Id">69L</v>
+                              </o>
+                              <v n="Id">68L</v>
+                            </o>
+                          </l2>
+                          <o n="InputParam" t="ParamList">
+                            <l2 n="Names" />
+                            <l2 n="Types" />
+                          </o>
+                          <o n="OutputParam" t="ParamList">
+                            <l2 n="Names" />
+                            <l2 n="Types" />
+                          </o>
+                          <v n="CallType" t="Operator">And</v>
+                          <n n="EN" />
+                          <n n="ENO" />
+                          <n n="STSnippet" />
+                          <v n="ContainsExtensibleInputs">false</v>
+                          <v n="ProvidesSTSnippet">false</v>
+                          <v n="Id">66L</v>
+                        </o>
+                        <v n="Id">71L</v>
+                      </o>
+                    </l2>
+                    <l2 n="Connectors" />
+                    <v n="Id">6L</v>
+                  </o>
+                  <o>
+                    <v n="ILActive">false</v>
+                    <v n="FBDValid">false</v>
+                    <v n="ILValid">false</v>
+                    <l2 n="ILLines" />
+                    <v n="Comment">""</v>
+                    <v n="Title">""</v>
+                    <v n="Label">""</v>
+                    <v n="OutCommented">false</v>
+                    <l2 n="NetworkItems" cet="BoxTreeBox">
+                      <o>
+                        <v n="BoxType">"MOVE"</v>
+                        <o n="Instance" t="Operand">
+                          <n n="Operand" />
+                          <v n="Type">""</v>
+                          <v n="Comment">""</v>
+                          <v n="SymbolComment">""</v>
+                          <v n="Address">""</v>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <v n="LValue">false</v>
+                          <v n="Boolean">false</v>
+                          <v n="IsInstance">true</v>
+                          <v n="Id">80L</v>
+                        </o>
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" cet="Operand">
+                            <n />
+                            <o>
+                              <v n="Operand">"_AlarmNum"</v>
+                              <v n="Type">"DINT"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">true</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">82L</v>
+                            </o>
+                          </l2>
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">false</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <n n="InputFlags" />
+                        <l2 n="InputItems">
+                          <o t="BoxTreeBox">
+                            <v n="BoxType">"OR"</v>
+                            <o n="Instance" t="Operand">
+                              <n n="Operand" />
+                              <v n="Type">""</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">true</v>
+                              <v n="Id">74L</v>
+                            </o>
+                            <o n="OutputItems" t="OutputItemList">
+                              <l2 n="OutputItems" />
+                            </o>
+                            <o n="Flags" t="Flags">
+                              <v n="Flags">0</v>
+                              <v n="Fixed">false</v>
+                              <v n="Extensible">false</v>
+                            </o>
+                            <n n="InputFlags" />
+                            <l2 n="InputItems" cet="BoxTreeOperand">
+                              <o>
+                                <o n="Operand" t="Operand">
+                                  <v n="Operand">"_AlarmMute"</v>
+                                  <v n="Type">"BOOL"</v>
+                                  <v n="Comment">""</v>
+                                  <v n="SymbolComment">""</v>
+                                  <v n="Address">""</v>
+                                  <o n="Flags" t="Flags">
+                                    <v n="Flags">0</v>
+                                    <v n="Fixed">true</v>
+                                    <v n="Extensible">false</v>
+                                  </o>
+                                  <v n="LValue">false</v>
+                                  <v n="Boolean">true</v>
+                                  <v n="IsInstance">false</v>
+                                  <v n="Id">77L</v>
+                                </o>
+                                <v n="Id">76L</v>
+                              </o>
+                              <o>
+                                <o n="Operand" t="Operand">
+                                  <v n="Operand">"Control.Inputs.AlarmAck.Enabled"</v>
+                                  <v n="Type">"BOOL"</v>
+                                  <v n="Comment">""</v>
+                                  <v n="SymbolComment">""</v>
+                                  <v n="Address">"%Q*"</v>
+                                  <o n="Flags" t="Flags">
+                                    <v n="Flags">0</v>
+                                    <v n="Fixed">true</v>
+                                    <v n="Extensible">false</v>
+                                  </o>
+                                  <v n="LValue">false</v>
+                                  <v n="Boolean">true</v>
+                                  <v n="IsInstance">false</v>
+                                  <v n="Id">79L</v>
+                                </o>
+                                <v n="Id">78L</v>
+                              </o>
+                            </l2>
+                            <o n="InputParam" t="ParamList">
+                              <l2 n="Names" />
+                              <l2 n="Types" />
+                            </o>
+                            <o n="OutputParam" t="ParamList">
+                              <l2 n="Names" />
+                              <l2 n="Types" />
+                            </o>
+                            <v n="CallType" t="Operator">Or</v>
+                            <n n="EN" />
+                            <n n="ENO" />
+                            <n n="STSnippet" />
+                            <v n="ContainsExtensibleInputs">false</v>
+                            <v n="ProvidesSTSnippet">false</v>
+                            <v n="Id">75L</v>
+                          </o>
+                          <o t="BoxTreeOperand">
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"0"</v>
+                              <v n="Type">"INT"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">85L</v>
+                            </o>
+                            <v n="Id">84L</v>
+                          </o>
+                        </l2>
+                        <o n="InputParam" t="ParamList">
+                          <l2 n="Names" cet="String">
+                            <v>EN</v>
+                          </l2>
+                          <l2 n="Types" cet="String">
+                            <v>BOOL</v>
+                          </l2>
+                        </o>
+                        <o n="OutputParam" t="ParamList">
+                          <l2 n="Names" cet="String">
+                            <v>ENO</v>
+                            <v></v>
+                          </l2>
+                          <l2 n="Types" cet="String">
+                            <v>BOOL</v>
+                            <v></v>
+                          </l2>
+                        </o>
+                        <v n="CallType" t="Operator">Move</v>
+                        <v n="EN">true</v>
+                        <v n="ENO">true</v>
+                        <n n="STSnippet" />
+                        <v n="ContainsExtensibleInputs">false</v>
+                        <v n="ProvidesSTSnippet">false</v>
+                        <v n="Id">81L</v>
+                      </o>
+                    </l2>
+                    <l2 n="Connectors" />
+                    <v n="Id">72L</v>
+                  </o>
+                  <o>
+                    <v n="ILActive">false</v>
+                    <v n="FBDValid">false</v>
+                    <v n="ILValid">false</v>
+                    <l2 n="ILLines" />
+                    <v n="Comment">""</v>
+                    <v n="Title">""</v>
+                    <v n="Label">""</v>
+                    <v n="OutCommented">false</v>
+                    <l2 n="NetworkItems" cet="BoxTreeBox">
+                      <o>
+                        <v n="BoxType">"M_LogAlarm"</v>
+                        <o n="Instance" t="Operand">
+                          <v n="Operand">""</v>
+                          <v n="Type">"M_LogAlarm"</v>
+                          <v n="Comment">""</v>
+                          <v n="SymbolComment">""</v>
+                          <v n="Address">""</v>
+                          <o n="Flags" t="Flags">
+                            <v n="Flags">0</v>
+                            <v n="Fixed">false</v>
+                            <v n="Extensible">false</v>
+                          </o>
+                          <v n="LValue">false</v>
+                          <v n="Boolean">false</v>
+                          <v n="IsInstance">true</v>
+                          <v n="Id">289L</v>
+                        </o>
+                        <o n="OutputItems" t="OutputItemList">
+                          <l2 n="OutputItems" />
+                        </o>
+                        <o n="Flags" t="Flags">
+                          <v n="Flags">0</v>
+                          <v n="Fixed">true</v>
+                          <v n="Extensible">false</v>
+                        </o>
+                        <n n="InputFlags" />
+                        <l2 n="InputItems" cet="BoxTreeOperand">
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"_Alarm"</v>
+                              <v n="Type">"BOOL"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">true</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">true</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">284L</v>
+                            </o>
+                            <v n="Id">283L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"_Name"</v>
+                              <v n="Type">"STRING(15)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">179L</v>
+                            </o>
+                            <v n="Id">178L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"_Description"</v>
+                              <v n="Type">"STRING(40)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">181L</v>
+                            </o>
+                            <v n="Id">180L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"''"</v>
+                              <v n="Type">"STRING(INT#0)"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">197L</v>
+                            </o>
+                            <v n="Id">196L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"M_Alarms()"</v>
+                              <v n="Type">"TcEventEntry"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">183L</v>
+                            </o>
+                            <v n="Id">182L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"_Alarm"</v>
+                              <v n="Type">"BOOL"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">1</v>
+                                <v n="Fixed">true</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">true</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">292L</v>
+                            </o>
+                            <v n="Id">291L</v>
+                          </o>
+                          <o>
+                            <o n="Operand" t="Operand">
+                              <v n="Operand">"Control.Outputs.AlarmMessage"</v>
+                              <v n="Type">"STRING"</v>
+                              <v n="Comment">""</v>
+                              <v n="SymbolComment">""</v>
+                              <v n="Address">""</v>
+                              <o n="Flags" t="Flags">
+                                <v n="Flags">0</v>
+                                <v n="Fixed">false</v>
+                                <v n="Extensible">false</v>
+                              </o>
+                              <v n="LValue">false</v>
+                              <v n="Boolean">false</v>
+                              <v n="IsInstance">false</v>
+                              <v n="Id">189L</v>
+                            </o>
+                            <v n="Id">188L</v>
+                          </o>
+                        </l2>
+                        <o n="InputParam" t="ParamList">
+                          <l2 n="Names" cet="String">
+                            <v>Execute</v>
+                            <v>Arg0</v>
+                            <v>Arg1</v>
+                            <v>Arg2</v>
+                            <v>EventEntry</v>
+                            <v>Clear</v>
+                            <v>Message</v>
+                          </l2>
+                          <l2 n="Types" cet="String">
+                            <v>BOOL</v>
+                            <v>STRING</v>
+                            <v>STRING</v>
+                            <v>STRING</v>
+                            <v>TcEventEntry</v>
+                            <v>BOOL</v>
+                            <v>STRING[REF]</v>
+                          </l2>
+                        </o>
+                        <o n="OutputParam" t="ParamList">
+                          <l2 n="Names" />
+                          <l2 n="Types" />
+                        </o>
+                        <v n="CallType" t="Operator">Method</v>
+                        <v n="EN">false</v>
+                        <v n="ENO">false</v>
+                        <n n="STSnippet" />
+                        <v n="ContainsExtensibleInputs">false</v>
+                        <v n="ProvidesSTSnippet">false</v>
+                        <v n="Id">290L</v>
+                      </o>
+                    </l2>
+                    <l2 n="Connectors" />
+                    <v n="Id">173L</v>
+                  </o>
+                </l2>
+                <v n="BranchCounter">493</v>
+                <v n="ValidIds">true</v>
+              </o>
+            </Data>
+            <TypeList>
+              <Type n="Boolean">System.Boolean</Type>
+              <Type n="BoxTreeAssign">{9873c309-1f09-4ebf-9078-42d8057ef11b}</Type>
+              <Type n="BoxTreeBox">{acfc6f68-8e3a-4af5-bf81-3dd512095a46}</Type>
+              <Type n="BoxTreeDemux">{b1d55618-017c-4bc5-990a-55c2f27d9d3a}</Type>
+              <Type n="BoxTreeOperand">{9de7f100-1b87-424c-a62e-45b0cfc85ed2}</Type>
+              <Type n="Flags">{668066f2-6069-46b3-8962-8db8d13d7db2}</Type>
+              <Type n="Int32">System.Int32</Type>
+              <Type n="Int64">System.Int64</Type>
+              <Type n="Network">{d9a99d73-b633-47db-b876-a752acb25871}</Type>
+              <Type n="NWLImplementationObject">{25e509de-33d4-4447-93f8-c9e4ea381c8b}</Type>
+              <Type n="Operand">{c9b2f165-48a2-4a45-8326-3952d8a3d708}</Type>
+              <Type n="Operator">{bffb3c53-f105-4e85-aba2-e30df579d75f}</Type>
+              <Type n="OutputItemList">{f40d3e09-c02c-4522-a88c-dac23558cfc4}</Type>
+              <Type n="ParamList">{71496971-9e0c-4677-a832-b9583b571130}</Type>
+              <Type n="String">System.String</Type>
+            </TypeList>
+          </XmlArchive>
+        </NWL>
+      </Implementation>
+    </Method>
+    <Method Name="M_Alarms" Id="{9108062e-d719-441f-a857-223fc164f81e}">
+      <Declaration><![CDATA[METHOD PRIVATE M_Alarms : TcEventEntry
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE _AlarmNum OF
+	1001: M_Alarms:= TC_Events.TcSequence.A_1001;//Failed to Reach Requested State		
+ELSE
+	M_Alarms:= TC_Events.TcSequence.A_Undefined;
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Name" Id="{da780c25-1ea0-4d2a-9645-691f350a0148}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Name : String[15]]]></Declaration>
+      <Get Name="Get" Id="{1ee78ae4-6d76-4f8b-89d0-55735eee87d9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Name := _Name;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a9538816-0b8e-46ec-8164-f2194c4c23ed}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Name := Name;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="SeqInterface" Id="{c5867ce7-dc85-4a63-8151-f52b897b5d59}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC SeqInterface : REFERENCE TO ST_SequenceInterface]]></Declaration>
+      <Get Name="Get" Id="{c6129851-ed72-4d44-8bd1-eee06b4a27de}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[SeqInterface REF= _SeqInterface; ]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{a8d65edd-cd08-4e9d-8239-c7534116fce9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_SeqInterface := SeqInterface;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="StepNum" Id="{130bd683-47ea-4e90-b3ab-f858e4d60918}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC StepNum : INT]]></Declaration>
+      <Get Name="Get" Id="{75f3e48c-3d37-423b-a9b1-ebaf6fcfdb42}">
+        <Declaration><![CDATA[PUBLIC 
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[StepNum := _StepNum;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{3a11944c-db0a-4cdc-8b7d-038bde4b44c7}">
+        <Declaration><![CDATA[PUBLIC 
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_StepNum := StepNum;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="StepReq" Id="{fae1f7a4-307c-418d-8568-ae40f3e9ac87}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC StepReq : INT]]></Declaration>
+      <Get Name="Get" Id="{9c14fa1a-19f9-4db6-9412-c6dfa1031b2c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[StepReq := _StepReq;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{980128ab-b28e-419c-83d8-b7955cf5cf62}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_StepReq := StepReq;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="StepTime_ET" Id="{995ecc46-0c06-4057-abe1-bf793c0b67cd}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC StepTime_ET : REAL]]></Declaration>
+      <Get Name="Get" Id="{03f2c4b2-2a2f-47c0-9595-9f454de1030e}">
+        <Declaration><![CDATA[PUBLIC 
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[StepTime_ET := _StepTime_ET;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="StepTimeDn" Id="{6e4618c3-946e-4e6f-9a8d-eda670e7295b}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC StepTimeDn : BOOL]]></Declaration>
+      <Get Name="Get" Id="{dafd0d52-a2e6-4f7b-a05b-69f3654182d3}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[StepTimeDn := _StepTimeDn;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Variables" Id="{12c62f2c-42f0-4fb4-bc9f-c6c10455f5ea}">
+      <Declaration><![CDATA[PROPERTY PUBLIC Variables : REFERENCE TO ARRAY[0..9] OF ST_Variable]]></Declaration>
+      <Get Name="Get" Id="{5c78cd74-ff17-44ff-9b2d-747709c179d7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Variables REF= _Variables;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_StepEngine">
+      <LineId Id="383" Count="0" />
+      <LineId Id="386" Count="0" />
+      <LineId Id="759" Count="2" />
+      <LineId Id="659" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="198" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="221" Count="1" />
+      <LineId Id="16" Count="2" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="440" Count="0" />
+      <LineId Id="439" Count="0" />
+      <LineId Id="21" Count="26" />
+      <LineId Id="709" Count="0" />
+      <LineId Id="49" Count="3" />
+      <LineId Id="554" Count="2" />
+      <LineId Id="441" Count="0" />
+      <LineId Id="710" Count="0" />
+      <LineId Id="495" Count="6" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="208" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Alarm.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.AlarmMute.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.CurrentStep.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Description.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Description.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.DeviceAlarm.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.DeviceAlarm.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Disable.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Disabled.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Disabled.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Fault.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.History.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.LastActiveStep.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.LastActiveStep.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.M_Alarms">
+      <LineId Id="12" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Name.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Name.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.SeqInterface.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.SeqInterface.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.StepNum.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.StepNum.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.StepReq.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.StepReq.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.StepTime_ET.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.StepTimeDn.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_StepEngine.Variables.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="E_ClientDataExchangeSteps" Id="{f5e3d5ae-953f-4901-8e8d-762c1f1bc021}">
+    <Declaration><![CDATA[TYPE E_ClientDataExchangeSteps :
+(
+	CLIENT_DATAEXCHANGE_STATE_IDLE,
+	CLIENT_DATAEXCHANGE_STATE_SEND_START,
+	CLIENT_DATAEXCHANGE_STATE_SEND_WAIT,
+	CLIENT_DATAEXCHANGE_STATE_RECEIVE_START,
+	CLIENT_DATAEXCHANGE_STATE_RECEIVE_WAIT,
+	CLIENT_DATAEXCHANGE_STATE_ERROR
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

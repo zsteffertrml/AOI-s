@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="F_ServoCheckWindow" Id="{a7e11f2e-404d-471f-bb43-752f5b8ec244}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_ServoCheckWindow : BOOL
+VAR_INPUT
+	Unwind			: LREAL;
+	Value			: LREAL;
+	Target			: REAL;
+	Tollerance		: REAL;
+END_VAR
+VAR
+	UpperBound		: REAL;
+	LowerBound		: REAL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[LowerBound := Target - Tollerance;
+UpperBound := Target + Tollerance;
+
+IF LowerBound >= 0 AND UpperBound <= Unwind THEN
+	F_ServoCheckWindow := ((Value >= LowerBound) AND (Value <= UpperBound));
+ELSIF LowerBound < 0 THEN
+	F_ServoCheckWindow := (((Value >= (Unwind + LowerBound)) AND (Value <= Unwind)) OR (Value >= 0) AND (Value <= UpperBound));
+ELSIF UpperBound > Unwind THEN
+	F_ServoCheckWindow := (((Value >= LowerBound) AND (Value <= Unwind)) OR (Value >= 0) AND (Value <= (UpperBound - Unwind)));
+ELSE
+	F_ServoCheckWindow := FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="F_ServoCheckWindow">
+      <LineId Id="2" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="27" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

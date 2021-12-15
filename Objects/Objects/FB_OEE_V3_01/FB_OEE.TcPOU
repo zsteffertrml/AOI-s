@@ -1,0 +1,247 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_OEE" Id="{5b5767e0-e5a6-465e-a333-12d1ee90a047}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FINAL FB_OEE
+VAR_IN_OUT
+	OEE									        : ST_OEE;
+	OEE_SP									    : ST_OEE_SP;
+	Control										: ST_System;
+END_VAR
+VAR
+	_Current_Time								: ST_TIMEMANAGEMENT;
+	_Current_Time_DT							: DATE_AND_TIME;
+	_Current_Time_DW							: DWORD;
+	_Pattern_Update								: BOOL;
+	_Mach_Perf_Reset							: BOOL;
+	_fb_MachinePerfomance						: FB_MachinePerformance;
+	_riseEdge									: R_TRIG;
+	_Start_Time_DT								: DATE_AND_TIME;
+	_Length_Time_DT								: DATE_AND_TIME;
+	_Operating_Time_DT							: DATE_AND_TIME;
+	_Break_Time_DT								: DATE_AND_TIME;
+	_Production_Time_DT							: DATE_AND_TIME;
+	_Stop_Time_DT								: DATE_AND_TIME;
+	_Start_Time_DW								: DWORD;
+	_Length_Time_DW								: DWORD;
+	_Stop_Time_DW								: DWORD;
+	_Year_Month_Day_DT							: ARRAY [0..1] OF DATE_AND_TIME;
+	_Year_Month_Day_TS							: ARRAY [0..1] OF TIMESTRUCT;
+	_Year_Month_Day_DW							: ARRAY [0..1] OF DWORD;
+	_Production_Time_T							: TIME;
+	_Operating_Time_T							: TIME;
+	_Break_Time_T								: TIME;
+	_Production_Time_TS							: TIMESTRUCT;
+	_Break_Time_TS								: TIMESTRUCT;
+	_Operating_Time_TS							: TIMESTRUCT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+    _Current_Time.CurrentTime		:= (Control.SystemTime.CurrentTime);
+    _Year_Month_Day_TS[0].wYear 	:= (Control.SystemTime.CurrentTime.wYear);
+    _Year_Month_Day_TS[0].wMonth 	:= (Control.SystemTime.CurrentTime.wMonth);
+    _Year_Month_Day_TS[0].wDay 		:= 1;
+    _Year_Month_Day_TS[1].wYear 	:= (Control.SystemTime.CurrentTime.wYear);
+    _Year_Month_Day_TS[1].wMonth    := (Control.SystemTime.CurrentTime.wMonth);
+    _Year_Month_Day_TS[1].wDay 		:= 1;
+    _Production_Time_TS.wYear 		:= (Control.SystemTime.CurrentTime.wYear);
+    _Production_Time_TS.wMonth 		:= (Control.SystemTime.CurrentTime.wMonth);
+    _Break_Time_TS.wYear 			:= (Control.SystemTime.CurrentTime.wYear);
+    _Break_Time_TS.wMonth 			:= (Control.SystemTime.CurrentTime.wMonth);
+    _Operating_Time_TS.wYear 		:= (Control.SystemTime.CurrentTime.wYear);
+    _Operating_Time_TS.wMonth 		:= (Control.SystemTime.CurrentTime.wMonth);
+    
+    _riseEdge(CLK := OEE_SP.Active);
+    OEE_SP.RisingEdge := _riseEdge.Q;
+    
+    IF (_riseEdge.Q) THEN
+    	OEE_SP.Operating_Seconds := 0;
+    	OEE_SP.Production_Seconds := 0;
+    	OEE_SP.Break_Seconds := 0;
+    	OEE_SP.SupplyDownTime_Seconds := 0;
+    	OEE_SP.OutfeedDownTime_Seconds := 0;
+    	OEE_SP.GoodPieces := 0;
+    	OEE_SP.RejectPieces := 0;
+		_Mach_Perf_Reset := TRUE;
+	ELSE
+		_Mach_Perf_Reset := FALSE;
+    END_IF
+    
+    IF (_riseEdge.Q) OR (Control.SystemTime.MidnightPulse AND NOT OEE_SP.Active) THEN;
+    	_Pattern_Update := TRUE;
+    ELSE
+    	_Pattern_Update := FALSE;
+    END_IF
+    
+    IF _Pattern_Update THEN;  // Updates Start Year/Month/Day to Current and Length Year/Month/Day  @ Midnight Pulse @ Midnight Pulse
+    	OEE_SP.Start.CurrentTime.wYear 	:= (Control.SystemTime.CurrentTime.wYear);
+    	OEE_SP.Length.CurrentTime.wYear 	:= 0;	
+    	OEE_SP.Start.CurrentTime.wMonth 	:= (Control.SystemTime.CurrentTime.wMonth);
+    	OEE_SP.Length.CurrentTime.wMonth 	:= 0;
+    	OEE_SP.Start.CurrentTime.wDay 	:= (Control.SystemTime.CurrentTime.wDay);
+    	OEE_SP.Length.CurrentTime.wDay 	:= 0;
+		OEE_SP.MachinePerformance[Control.PackMLState.CurrentState].Current_Time := 0;
+		OEE_SP.MachinePerformance[Control.PackMLState.CurrentState].Current.CurrentTime.wHour := 0;
+		OEE_SP.MachinePerformance[Control.PackMLState.CurrentState].Current.CurrentTime.wMinute := 0;
+		OEE_SP.MachinePerformance[Control.PackMLState.CurrentState].Current.CurrentTime.wSecond := 0;
+    END_IF
+
+	//--------------------------------------------------------Stop Time Calculation---------------------------------------------------------
+    _Start_Time_DT 			:= SYSTEMTIME_TO_DT(OEE_SP.Start.CurrentTime); 		// Converts Start Time format from TIMESTRUCT to DATE_AND_TIME
+    _Length_Time_DT 		:= SYSTEMTIME_TO_DT(OEE_SP.Length.CurrentTime); 	// Converts Length Time format from TIMESTRUCT to DATE_AND_TIME
+    _Year_Month_Day_DT[0] 	:= SYSTEMTIME_TO_DT(_Year_Month_Day_TS[0]);			// Year/Month TimeStuct for Calculation 		
+    _Year_Month_Day_DT[1] 	:= SYSTEMTIME_TO_DT(_Year_Month_Day_TS[1]);			// Year/Month TimeStuct for Calculation
+    _Start_Time_DW			:=DT_TO_DWORD(_Start_Time_DT); 						// Converts Start Time format from DATE_AND_TIME to DWORD for Calculation 
+    _Length_Time_DW			:=DT_TO_DWORD(_Length_Time_DT); 					// Converts Length Time format from DATE_AND_TIME to DWORD for Calculation 
+    _Year_Month_Day_DW[0]	:=DT_TO_DWORD(_Year_Month_Day_DT[0]); 				// Converts Year/Month Time format from DATE_AND_TIME to DWORD for Calculation 
+    _Year_Month_Day_DW[1]	:=DT_TO_DWORD(_Year_Month_Day_DT[1]); 	       
+                         
+    //Calculate Stop TIME (Start TIME + Shift Length TIME)
+    IF  OEE_SP.Length.CurrentTime.wDay = 0 THEN			// When Length Day = 0, Stop Time Calculcation is Different because TimeStruct has a minimum of 1 for Days
+    	_Year_Month_Day_TS[0].wHour 	 := OEE_SP.Length.CurrentTime.wHour;
+    	_Year_Month_Day_TS[0].wMinute 	 := OEE_SP.Length.CurrentTime.wMinute;
+    	_Stop_Time_DW 					 := ((_Start_Time_DW+_Year_Month_Day_DW[0])-_Year_Month_Day_DW[1]);	// Add Shift Length Time to Start Time and subtract Year/Month/Day = Stop Time
+    	_Stop_Time_DT 					 := DWORD_TO_DT(_Stop_Time_DW);										// Convert Stop Time fron DWORD to DATE_AND_TIME format	
+    	OEE_SP.Stop.CurrentTime 		 := DT_TO_SYSTEMTIME(_Stop_Time_DT);								// Convert Stop Time from DATE_AND_TIME format to TIMESTRUCT
+    ELSE                                                                                
+    	_Stop_Time_DW 					:= (_Start_Time_DW+_Length_Time_DW)-_Year_Month_Day_DW[1];	// Add Shift Length Time to Start Time and subtract Year/Month = Stop Time
+    	_Stop_Time_DT 					:= DWORD_TO_DT(_Stop_Time_DW);								// Convert Stop Time fron DWORD to DATE_AND_TIME format
+    	OEE_SP.Stop.CurrentTime 		:= DT_TO_SYSTEMTIME(_Stop_Time_DT);							// Convert Stop Time from DATE_AND_TIME format to TIMESTRUCT
+    	OEE_SP.Stop.CurrentTime.wDay 	:= OEE_SP.Stop.CurrentTime.wDay + 1;
+    END_IF
+	
+	IF NOT OEE_SP.Break_Active AND OEE_SP.Active THEN
+		_fb_MachinePerfomance(Perf := OEE_SP.MachinePerformance, Control := Control, Data_Reset := _Mach_Perf_Reset);
+	END_IF
+    //--------------------------------------------------------Availability---------------------------------------------------------
+    
+    //Calculate total time the machine has been avaliable to run (i.e. operators not on a break)
+    IF  OEE_SP.Active AND NOT OEE_SP.Break_Active AND Control.SystemTime.SecondPulse THEN;
+    	OEE_SP.Production_Seconds := OEE_SP.Production_Seconds + 1;
+    END_IF
+    _Production_Time_T := REAL_TO_TIME(OEE_SP.Production_Seconds)*1000;
+    _Production_Time_DT := TIME_TO_DT(_Production_Time_T);
+    _Production_Time_TS := DT_TO_SYSTEMTIME(_Production_Time_DT);
+    IF OEE_SP.Production_Seconds < 86400 THEN
+    	OEE_SP.Production_Time.CurrentTime := _Production_Time_TS;
+    	OEE_SP.Production_Time.CurrentTime.wDay := 0;
+    ELSE
+    	OEE_SP.Production_Time.CurrentTime := _Production_Time_TS;
+    	OEE_SP.Production_Time.CurrentTime.wDay := _Production_Time_TS.wDay-1;
+    END_IF	
+    
+    //Calculate the time the machine has been producing
+    IF OEE_SP.Active AND NOT OEE_SP.Break_Active AND Control.SystemTime.SecondPulse AND (Control.PackMLState.Execute OR Control.PackMLState.Suspended OR Control.PackMLState.Suspending OR Control.PackMLState.UnSuspending) THEN;
+    	OEE_SP.Operating_Seconds := OEE_SP.Operating_Seconds + 1;
+    END_IF
+    
+    _Operating_Time_T := REAL_TO_TIME(OEE_SP.Operating_Seconds)*1000;
+    _Operating_Time_DT := TIME_TO_DT(_Operating_Time_T);
+    _Operating_Time_TS := DT_TO_SYSTEMTIME(_Operating_Time_DT);
+    IF OEE_SP.Operating_Seconds < 86400 THEN
+    	OEE_SP.Operating_Time.CurrentTime := (_Operating_Time_TS);
+    	OEE_SP.Operating_Time.CurrentTime.wDay := 0;
+    ELSE
+    	OEE_SP.Operating_Time.CurrentTime := (_Operating_Time_TS);
+    	OEE_SP.Operating_Time.CurrentTime.wDay := _Operating_Time_TS.wDay-1;
+    END_IF
+    
+    //Calculate Break Time
+    IF OEE_SP.Active AND OEE_SP.Break_Active AND Control.SystemTime.SecondPulse THEN;
+    	OEE_SP.Break_Seconds := OEE_SP.Break_Seconds + 1; 
+    END_IF
+    _Break_Time_T := LREAL_TO_TIME(OEE_SP.Break_Seconds)*1000;
+    _Break_Time_DT := TIME_TO_DT(_Break_Time_T);
+    _Break_Time_TS := DT_TO_SYSTEMTIME(_Break_Time_DT);
+    IF OEE_SP.Break_Seconds < 86400 THEN
+    	OEE_SP.Break_Time.CurrentTime := (_Break_Time_TS);
+    	OEE_SP.Break_Time.CurrentTime.wDay := 0;
+    ELSE
+    	OEE_SP.Break_Time.CurrentTime := (_Break_Time_TS);
+    	OEE_SP.Break_Time.CurrentTime.wDay := _Break_Time_TS.wDay-1;
+    END_IF
+     
+    //Calculate Avaliability
+    IF (OEE_SP.Operating_Seconds > 0 AND OEE_SP.Production_Seconds > 0.0) AND Control.SystemTime.SecondPulse THEN;
+    	OEE_SP.Availability := ((OEE_SP.Operating_Seconds/ F_CheckDivReal(OEE_SP.Production_Seconds))*100);
+    ELSIF (OEE_SP.Operating_Seconds <= 0 OR OEE_SP.Production_Seconds <= 0.0) THEN;
+    	OEE_SP.Availability := 0.0;
+    END_IF
+    
+    //--------------------------------------------------------Performance---------------------------------------------------------
+    
+    //Calculate Performance
+    IF (OEE_SP.TotalPieces > 0 AND OEE_SP.Operating_Seconds > 0.0 AND OEE_SP.TargetRate > 0.0) AND Control.SystemTime.SecondPulse  THEN;
+    	OEE_SP.Performance := DINT_TO_REAL(OEE_SP.TotalPieces)/OEE_SP.Operating_Seconds/(F_CheckDivReal(OEE_SP.TargetRate/60))*100;
+    ELSIF ((OEE_SP.TotalPieces <= 0) OR (OEE_SP.Operating_Seconds <= 0.0) OR (OEE_SP.TargetRate <= 0.0)) THEN;
+    	OEE_SP.Performance := 0;
+    ELSIF OEE_SP.Performance > 100.0 THEN;
+    	OEE_SP.Performance := 100;
+    END_IF
+    
+    //--------------------------------------------------------Quality---------------------------------------------------------
+    
+    //Calculate Quality
+    IF (OEE_SP.GoodPieces > 0 AND OEE_SP.TotalPieces > 0) AND Control.SystemTime.SecondPulse  THEN;
+    	OEE_SP.Quality := DINT_TO_REAL(OEE_SP.GoodPieces)/DINT_TO_REAL(F_CheckDivDint(OEE_SP.TotalPieces))*100;
+    ELSIF (OEE_SP.GoodPieces <= 0 OR OEE_SP.TotalPieces <= 0) THEN;
+    	OEE_SP.Quality := 0.0;
+    END_IF
+    //--------------------------------------------------------------OEE-----------------------------------------------------------------
+    
+    //Calculate OEE 
+    IF Control.SystemTime.SecondPulse THEN
+    OEE_SP.OEE := ((OEE_SP.Availability/100) * (OEE_SP.Performance/100) * (OEE_SP.Quality/100)) *100;
+    IF OEE_SP.OEE >100.0 THEN
+    	OEE_SP.OEE:=100;
+    END_IF
+    END_IF
+    //--------------------------------------------------------Supply Availability---------------------------------------------------------
+    
+    //Calculate Infeed Supply
+    IF (OEE_SP.Operating_Seconds > 0 AND OEE_SP.Production_Seconds > 0.0) AND Control.SystemTime.SecondPulse  THEN;
+    	OEE_SP.SupplyAvaliability := ((OEE_SP.Operating_Seconds-(OEE_SP.SupplyDownTime_Seconds))/F_CheckDivReal(OEE_SP.Operating_Seconds)*100);
+    ELSIF (OEE_SP.Operating_Seconds <= 0 OR OEE_SP.Production_Seconds <= 0.0) THEN;
+    	OEE_SP.SupplyAvaliability := 0.0;
+    END_IF
+    //--------------------------------------------------------Outfeed Availability---------------------------------------------------------
+    //Calculate Outfeed Availability
+    IF (OEE_SP.Operating_Seconds > 0 AND OEE_SP.Production_Seconds > 0.0) AND Control.SystemTime.SecondPulse  THEN;
+    	OEE_SP.OutfeedAvaliability := ((OEE_SP.Operating_Seconds-(OEE_SP.OutfeedDownTime_Seconds))/F_CheckDivReal(OEE_SP.Operating_Seconds)*100);
+    ELSIF (OEE_SP.Operating_Seconds <= 0 OR OEE_SP.Production_Seconds <= 0.0) THEN;
+    	OEE_SP.OutfeedAvaliability := 0.0;
+    END_IF
+    //--------------------------------------------------------Total Pieces---------------------------------------------------------
+    OEE_SP.TotalPieces := (OEE_SP.GoodPieces + OEE_SP.RejectPieces);
+    OEE.Outputs.Availability := OEE_SP.Availability;
+    OEE.Outputs.Performance := OEE_SP.Performance;
+    OEE.Outputs.Quality:= OEE_SP.Quality;
+    OEE.Outputs.OEE:= OEE_SP.OEE;
+	
+	 //--------------------------------------------------------Active Shift---------------------------------------------------------
+    _Current_Time_DT := SYSTEMTIME_TO_DT(_Current_Time.CurrentTime);
+    _Current_Time_DW	:=DT_TO_DWORD(_Current_Time_DT);
+    
+    IF ((_Current_Time_DW > _Start_Time_DW) AND (_Current_Time_DW <= _Stop_Time_DW)) THEN //OR (REAL_TO_UDINT(OEE_SP.Production_Seconds) < (_Stop_Time_DW - _Start_Time_DW)) THEN
+    	OEE.Outputs.Active := TRUE;
+    	OEE_SP.Active := TRUE;
+    ELSE 
+    	OEE.Outputs.Active := FALSE;
+    	OEE_SP.Active := FALSE;
+    END_IF
+
+	IF OEE.Inputs.Break_Active AND OEE.Outputs.Active THEN
+		OEE_SP.Break_Active:=TRUE;
+	ELSE 
+		OEE_SP.Break_Active:=FALSE;
+	END_IF
+	
+	OEE_SP.StateCurrent := Control.PackMLState.CurrentState;
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_OEE">
+      <LineId Id="1572" Count="200" />
+      <LineId Id="1400" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

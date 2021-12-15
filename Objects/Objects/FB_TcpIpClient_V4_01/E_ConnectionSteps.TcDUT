@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="E_ConnectionSteps" Id="{ae46553d-d518-455f-bf7c-ba62e3c0307f}">
+    <Declaration><![CDATA[TYPE E_ConnectionSteps :
+(
+	CONNECTION_STATE_IDLE,
+	CONNECTION_STATE_CONNECT_START,
+	CONNECTION_STATE_CONNECT_WAIT,
+	CONNECTION_STATE_DATAEXCHANGE_START,
+	CONNECTION_STATE_DATAEXCHANGE_WAIT,
+	CONNECTION_STATE_CLOSE_START,
+	CONNECTION_STATE_CLOSE_WAIT,
+	CONNECTION_STATE_ERROR
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

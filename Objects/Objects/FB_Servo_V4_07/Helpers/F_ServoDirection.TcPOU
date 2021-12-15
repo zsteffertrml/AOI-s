@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="F_ServoDirection" Id="{af1de19d-7c46-4d50-83cf-2ad09cf4a250}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_ServoDirection : MC_DIRECTION
+VAR_INPUT
+	ServoMoveType		: E_ServoMoveType;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE ServoMoveType OF
+	eServoMoveType_MODULO_SHORTEST_PATH : 
+		F_ServoDirection := MC_Shortest_Way;
+	eServoMoveType_MODULO_POSITIVE : 
+		F_ServoDirection := MC_Positive_Direction;
+	eServoMoveType_MODULO_NEGATIVE : 
+		F_ServoDirection := MC_Negative_Direction;
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="F_ServoDirection">
+      <LineId Id="3" Count="6" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_Example" Id="{3ecacf77-c7a3-4b8a-9244-10a39db4c2e1}">
+    <Declaration><![CDATA[TYPE ST_Example :
+STRUCT
+	TimeStamp	   					:			STRING(31);//Time of Check
+	UID	  							:			STRING(31);//8 Byte Unique Mac Id
+	DataOk							:			STRING(31);//0=Fail, 1=Pass, 2=NA
+	VisionOk						:			STRING(31);//0=Fail, 1=Pass, 2=NA
+	VisionCause						:			STRING(31);//Cause of Vision Failure if Applicable
+	VisionScore						: 			USINT;//0-100% Tag Find Score	
+	Cycles							: 			USINT;//Amount of Cycles Through Machine
+	Age	   							:			STRING(31);//Age of Tag
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

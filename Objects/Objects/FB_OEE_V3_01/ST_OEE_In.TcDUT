@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <DUT Name="ST_OEE_In" Id="{60371e0d-96a2-4fae-a165-59aba8a034a2}">
+    <Declaration><![CDATA[TYPE ST_OEE_In :
+STRUCT
+	Sec_PulseTrigger										: BOOL;
+	Break_Active											: BOOL;
+	EnableIn												: BOOL;	
+	Select													: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

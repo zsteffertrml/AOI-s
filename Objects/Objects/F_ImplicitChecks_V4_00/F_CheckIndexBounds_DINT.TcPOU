@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.6">
+  <POU Name="F_CheckIndexBounds_DINT" Id="{73a65d62-1916-44d3-bac3-d648b040652e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_CheckIndexBounds_DINT : DINT
+VAR_INPUT
+	lowerbound		: 	DINT;
+	upperbound		:   DINT;
+END_VAR
+VAR_IN_OUT
+	index			: 	DINT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF  index < lowerbound THEN
+	F_CheckIndexBounds_DINT := lowerbound;
+	index 		:= lowerbound;
+ELSIF  index > upperbound THEN
+	F_CheckIndexBounds_DINT := upperbound;
+	index 		:= upperbound;
+ELSE  
+	F_CheckIndexBounds_DINT := index;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="F_CheckIndexBounds_DINT">
+      <LineId Id="15" Count="7" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

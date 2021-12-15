@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="E_ServoMoveType" Id="{351f92b8-48bb-4bec-a2d7-277e3d129326}">
+    <Declaration><![CDATA[TYPE E_ServoMoveType :(
+	(*Move Type Configuration of Positional Move*)
+	eServoMoveType_ABSOLUTE							:=  0,
+	eServoMoveType_RELATIVE 						:=  1,
+	eServoMoveType_MODULO_SHORTEST_PATH 			:=  2,
+	eServoMoveType_MODULO_POSITIVE 					:=  3,
+	eServoMoveType_MODULO_NEGATIVE					:=  4,
+	eServoMoveType_ABSOLUTE_MASTER_OFFSET 			:=  5,
+	eServoMoveType_INCREMENTAL_MASTER_OFFSET		:=  6
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

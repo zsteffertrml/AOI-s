@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_Settings_SP" Id="{bbda3a83-564f-4fa4-bdb3-46f9e6e8b5ea}">
+    <Declaration><![CDATA[TYPE ST_Settings_SP :
+STRUCT
+	HomeOffsetPosition			: LREAL;			//Home Offset Position
+	HomeRequired				: BOOL;				//Used if Servo is Homed from Marker
+	MaxPositionLag				: LREAL;			//Maximum Position Lag Value
+	MaxPositionLagTime			: LREAL;			//Filter Time for Maximum Position Lag
+	SoftPositionLimitMaxActive	: BOOL;				//Activates Soft Position Maximum Limit Monitoring
+	SoftPositionLimitMinActive	: BOOL;				//Activates Soft Position Minimum Limit Monitoring
+	SoftPositionLimitMax		: LREAL;			//Maximum Soft Position Limit
+	SoftPositionLimitMin		: LREAL;			//Minimum Soft Position Limit
+	PositionTollerance			: REAL := 1;		//Window for position OK
+	ModuloFactor				: LREAL;			//Modulo (unwind) value read form drive parameters
+	HomingCamSearchDirection	: BOOL;				//Direction for homing drive
+	HomingSyncSearchDirection	: BOOL;				//Direction for second stage of homing
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

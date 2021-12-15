@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_System_SP" Id="{7e69e2d2-d4d7-408b-810b-a12c1f260032}">
+    <Declaration><![CDATA[TYPE ST_System_SP:
+STRUCT
+	Name					: STRING[15];			// Name for HMI
+	Description				: STRING[40];			// Description for HMI
+	Homed					: BOOL;					// Machine homed
+	Energized_T1_PT			: REAL;					// Pneumatic soft start time
+	Energized_T2_PT			: REAL;					// Drives power up time
+	TimeManagement			: ST_TimeManagement_SP;	// Total up time of System
+	ActiveRecipe			: STRING;				// Description of active recipe
+	SelectedRecipe			: STRING;				// Description of Selected Recipe on the HMI Grid
+	RecipeChanged			: BOOL;					// Recipe changed, used for operator confirmation
+	ActiveRecipeIndex		: UDINT;				// Index of active recipe
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_PMLState" Id="{724a34e2-c359-47c3-b388-840d862b45ee}">
+    <Declaration><![CDATA[TYPE ST_PMLState :
+STRUCT
+	CurrentState		: DINT;
+	Clearing			: BOOL;
+	Stopped				: BOOL;
+	Starting			: BOOL;
+	Idle				: BOOL;
+	Suspended			: BOOL;
+	Execute				: BOOL;
+	Stopping			: BOOL;
+	Aborting			: BOOL;
+	Aborted				: BOOL;
+	Holding				: BOOL;
+	Held				: BOOL;
+	UnHolding			: BOOL;
+	Suspending			: BOOL;
+	UnSuspending		: BOOL;
+	Resetting 			: BOOL;
+	Completing			: BOOL;
+	Complete			: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

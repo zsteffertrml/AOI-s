@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_PMLData" Id="{547d36ce-ddeb-4431-a6d6-b0982077c990}">
+    <Declaration><![CDATA[TYPE ST_PMLData :
+STRUCT
+	Control						: ST_PMLControl;						//PackML control data
+	Status						: ST_PMLStatus;							//PackML status data
+	Admin						: ST_PMLAdmin;							//PackML administration Data
+	StateCtrl					: ST_PMLModualCommands;					//PackML state control commands
+	Indicator					: ST_PMLIndicators;						//PackML interfaces
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_System_In" Id="{fea9e9ee-cc46-405b-b0de-c883802e76cd}">
+    <Declaration><![CDATA[TYPE ST_System_In :
+STRUCT
+	Start					: ST_Selection;				//Machine Start selection
+	Hold					: ST_Selection;				//Machine Hold selection
+	Stop					: ST_Selection;				//Machine Stop selection
+	Complete				: ST_Selection;				//Machine Complete selection
+	SafetyReset				: ST_Selection;				//Machine Safety Reset selection
+	Reset					: ST_Selection;				//Machine Reset selection
+	AlarmAck				: ST_Selection;				//Machine Alarm Acknowledge selection
+	Home					: ST_Selection;				//Machine Home selection
+	Simulation				: ST_Selection;				//Machine Simulation selection
+	RecipeLoad				: ST_Selection;				//Operator Load Recipe Selection
+	RecipeSave				: ST_Selection;				//Operator Save Recipe Selection
+	RecipeChanged			: ST_Selection;				//Recipe Changed Selection
+	DeleteRecipe			: ST_Selection;				//Service Reset Selection
+	DoorUnlock				: ST_Selection;				//Machine Gaurd Unlock Selection
+	HoursReset				: BOOL;						//Resets All Motor hours, cylinder counts, machine Hours, etc...
+	AlarmMuteReset			: BOOL;						//Resets Alarm Mutes for all Alarms
+	GlueStandbyReset		: BOOL;						//Resets standby for all glue machines
+	Exception				: __SYSTEM.ExceptionCode;	//System Exception Handler			
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

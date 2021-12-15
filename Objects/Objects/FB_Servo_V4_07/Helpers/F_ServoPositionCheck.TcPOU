@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="F_ServoPositionCheck" Id="{e01f3c4a-865a-4f78-a998-cf72412fac28}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_ServoPositionCheck : BOOL
+VAR_INPUT
+	Unwind			: LREAL;
+	MovePos			: REAL;
+	ActualPos		: LREAL;
+	PosTollerance	: REAL;
+	Window			: REAL;
+END_VAR
+VAR
+	Deviation		: LREAL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF (ActualPos < MovePos) THEN
+	IF ABS((Unwind-MovePos)+ActualPos)<ABS(MovePos-ActualPos) THEN
+		Deviation := -1* ((Unwind-MovePos)+ActualPos);
+	ELSE
+		Deviation := MovePos-ActualPos;
+	END_IF
+ELSE	
+	IF ABS((Unwind-ActualPos)+MovePos)<ABS(ActualPos-MovePos) THEN
+		Deviation :=  ((Unwind-ActualPos)+MovePos);
+	ELSE
+		Deviation := -1* (ActualPos-MovePos);
+	END_IF
+END_IF
+
+
+
+F_ServoPositionCheck := ABS(Deviation) <= Window AND ABS(Deviation) > PosTollerance;]]></ST>
+    </Implementation>
+    <LineIds Name="F_ServoPositionCheck">
+      <LineId Id="64" Count="15" />
+      <LineId Id="52" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

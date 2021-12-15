@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_Selection" Id="{725e8aa0-451f-4ccf-913d-d3f43e6a160a}">
+    <Declaration><![CDATA[TYPE ST_Selection :
+STRUCT
+	Select			: BOOL;
+	Queued			: BOOL;
+	Enabled	    	: BOOL;
+	Interlock		: BOOL;
+	Messages		: STRING[255];
+	Description		: STRING[255];
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

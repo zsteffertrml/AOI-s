@@ -1,0 +1,293 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_Statistics" Id="{4d66ba82-e7a4-4ed9-a000-21de436fb4b9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FINAL FB_Statistics
+VAR_INPUT
+	Description				: STRING(31);			//Statistic description
+	Trigger					: BOOL;					//New item trigger
+	PerPulse				: REAL;					//Items per pulse
+END_VAR
+VAR
+	_Reset					: BOOL;					//Reset Statistics
+	_CycleTime				: REAL;					//Time for one item cycle (seconds)
+	_CurrentRate			: REAL;					//Current item rate per minute
+	_ThisMin				: REAL;					//Number of items processed this minute
+	_LastMin				: REAL;					//Number of items processed last minute
+	_ThisHour				: REAL;					//Number of items processed this hour
+	_LastHour				: REAL;					//Number of items processed last hour
+	_HistoryAvg				: REAL;					//Average items/minute for the previous 10 minutes
+	_History				: ARRAY[1..10] OF REAL; //Item 10minute history
+	_InstHistory			: ARRAY[1..20] OF REAL;	//Item instantaneous history
+	_ItemCycleTime			: REAL;					//Item cycle time
+	_InstHistoryCount		: INT;					//Instantaneous history For loop counter
+	_HistoryCount			: INT;					//History For loop counter
+	_HistorySum				: REAL;					//History summation holder
+	_R_Trig					: R_TRIG;				//Statistic Count Trigger	
+	_SecondsCount			: INT;					//Seconds history for loop counter
+	_ThisSec				: INT;					//Item count this second
+	_SecondsHistory			: ARRAY [0..59] OF INT; //Seconds history
+	_ItemsLast60s			: INT;					//Current item rate for last 60 seconds
+END_VAR
+VAR_IN_OUT
+	Control					: ST_System;			//Machine control system time
+END_VAR
+VAR PERSISTENT
+	_LifeTime				: REAL;					//Life time count
+	_Today					: REAL;					//Tadays count
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Statistic Count Trigger
+_R_Trig	(CLK:=Trigger);
+
+//Total Counts
+IF Control.SystemTime.MidnightPulse OR _Reset THEN
+	_Today := 0;
+ELSE 
+	IF _R_Trig.Q THEN
+		_LifeTime := _LifeTime + PerPulse;
+		_Today := _Today + PerPulse;
+		_ThisHour := _ThisHour + PerPulse;
+		_ThisMin := _ThisMin + PerPulse;
+	END_IF
+END_IF
+
+//Cycle Time
+IF _R_Trig.Q AND _ItemCycleTime > 0 THEN
+	_CycleTime := _ItemCycleTime;
+	_CurrentRate := PerPulse * (60 / F_CheckDivReal(_ItemCycleTime));
+	_ItemCycleTime := 0;
+	FOR _InstHistoryCount := 20 TO 2 BY -1 DO
+		_InstHistory[F_CheckIndexBounds(1,10,_InstHistoryCount)] := _InstHistory[F_CheckIndexBounds(1,10,_InstHistoryCount)-1];
+	END_FOR
+	_InstHistory[1] := _CycleTime;	
+ELSIF Control.PackMLState.Execute OR Control.PackMLState.Holding OR Control.PackMLState.UnHolding OR Control.PackMLState.Suspending OR Control.PackMLState.UnSuspending OR Control.PackMLState.Completing  THEN
+	_ItemCycleTime := _ItemCycleTime + Control.SystemTime.ScanTime;
+END_IF
+
+//Minute Counts and History
+IF Control.SystemTime.MinutePulse THEN
+	_LastMin := _ThisMin;
+	_ThisMin := 0;
+	_HistorySum := 0;
+	FOR _HistoryCount := 10 TO 2 BY -1 DO
+		_History[F_CheckIndexBounds(1,10,_HistoryCount)] := _History[F_CheckIndexBounds(1,10,_HistoryCount)-1];
+		_HistorySum := _HistorySum + _History[F_CheckIndexBounds(1,10,_HistoryCount)];
+	END_FOR
+	_History[1] := _LastMin;
+	_HistorySum := _HistorySum + _History[1];
+	_HistoryAvg := _HistorySum/10;
+END_IF
+
+//Hour counts
+IF Control.SystemTime.HourPulse THEN
+	_LastHour := _ThisHour;
+	_ThisHour := 0;
+END_IF
+
+//Seconds Count and History
+IF _R_Trig.Q THEN
+	_SecondsHistory[_ThisSec] := _SecondsHistory[_ThisSec] + REAL_TO_INT(PerPulse);
+END_IF
+
+_ItemsLast60s := 0;
+FOR _SecondsCount:= 0 TO 59 DO
+	_ItemsLast60s := _ItemsLast60s + _SecondsHistory[_SecondsCount];
+END_FOR
+
+IF Control.SystemTime.SecondPulse THEN
+	_ThisSec := _ThisSec + 1;
+	IF _ThisSec >= 60 THEN _ThisSec := 0; END_IF;
+	_SecondsHistory[_ThisSec] := 0;
+END_IF
+
+
+
+
+
+]]></ST>
+    </Implementation>
+    <Property Name="CurrentRate" Id="{f8e2e6df-a606-46e3-ac1b-969d9cadd38b}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC CurrentRate : REAL]]></Declaration>
+      <Get Name="Get" Id="{61880ab1-a8bd-48b4-af64-bbe1afc0b6df}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[CurrentRate := _CurrentRate;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="CycleTime" Id="{5f44376c-338f-413e-beb1-acf443b1da5d}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC CycleTime : REAL]]></Declaration>
+      <Get Name="Get" Id="{1e7edb77-02c9-469e-9709-90a8e872c67c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[CycleTime := _CycleTime;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="History" Id="{f5567f7d-3dad-4f20-9410-65c1add9fce8}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC History : ARRAY[1..10] OF REAL]]></Declaration>
+      <Get Name="Get" Id="{ad6c6aa2-10ac-43ed-860a-66006935450e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[History := _History;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="HistoryAvg" Id="{1725eb71-5cbf-414a-a784-8607904992a4}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC HistoryAvg : REAL]]></Declaration>
+      <Get Name="Get" Id="{24d51c51-6faa-423c-93b5-f566ddd77646}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[HistoryAvg := _HistoryAvg;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="InstHistory" Id="{64ff3fa2-bda8-42cb-be69-ee50bc63493a}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC InstHistory : ARRAY[1..20] OF REAL]]></Declaration>
+      <Get Name="Get" Id="{57f1ebcb-119f-4d43-ab40-9e6609830287}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[InstHistory := _InstHistory;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="LastHour" Id="{532d1d2b-7a3e-4d4c-b4d5-0984f45b47a7}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC LastHour : REAL]]></Declaration>
+      <Get Name="Get" Id="{65b86eb5-eedf-4be6-b960-152c2b62cf0b}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[LastHour := _LastHour;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="LastMin" Id="{6f8bee78-47a9-4e80-9529-d50ea8a86859}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC LastMin : REAL
+]]></Declaration>
+      <Get Name="Get" Id="{4c772052-0dc0-459b-a363-660940f93c79}">
+        <Declaration><![CDATA[PUBLIC 
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[LastMin := _LastMin;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="Reset" Id="{ed0f0a91-08d5-4872-9888-0128419c3e20}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC Reset : BOOL]]></Declaration>
+      <Get Name="Get" Id="{3bb69b12-3be4-407c-ad85-cae702043beb}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Reset := _Reset;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{92f2845a-578e-42e8-b927-06728fbbeaa8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Reset := Reset;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="ThisHour" Id="{41286b01-53c1-452d-8f07-890ae7037a8d}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC ThisHour : REAL]]></Declaration>
+      <Get Name="Get" Id="{a9641f2f-e280-4aec-8875-864449827aed}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ThisHour := _ThisHour;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="ThisMin" Id="{27b685a2-4b2b-47c9-8ece-ac9513cc439b}">
+      <Declaration><![CDATA[{attribute 'monitoring' := 'variable'}
+PROPERTY PUBLIC ThisMin : REAL]]></Declaration>
+      <Get Name="Get" Id="{e18fd340-700c-465c-85a4-a39cf9a07e43}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ThisMin := _ThisMin;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_Statistics">
+      <LineId Id="359" Count="0" />
+      <LineId Id="362" Count="0" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="302" Count="10" />
+      <LineId Id="314" Count="11" />
+      <LineId Id="313" Count="0" />
+      <LineId Id="329" Count="12" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="345" Count="4" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="395" Count="15" />
+      <LineId Id="394" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.CurrentRate.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.CycleTime.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.History.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.HistoryAvg.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.InstHistory.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.LastHour.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.LastMin.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.Reset.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.Reset.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.ThisHour.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Statistics.ThisMin.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

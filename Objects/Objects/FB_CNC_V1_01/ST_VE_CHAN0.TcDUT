@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_VE_CHAN0" Id="{2c69a315-94ad-4dca-831d-ff08db694687}">
+    <Declaration><![CDATA[TYPE ST_VE_CHAN0 :
+STRUCT
+	Name			: STRING[127];
+	Table 			: ST_Position;
+	TableHeight		: LREAL;
+	ParkPos 		: ST_Position;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

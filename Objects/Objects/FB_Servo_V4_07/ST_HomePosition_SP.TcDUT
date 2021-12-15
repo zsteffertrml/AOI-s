@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_HomePosition_SP" Id="{e2290ffa-e6ed-48c3-9132-fc60f36622b1}">
+    <Declaration><![CDATA[TYPE ST_HomePosition_SP :
+STRUCT
+	Position			: REAL;					//Position Value to Move to
+	FastVelocity		: REAL := 50;			//Fast Velocity Value of Move
+	SlowVelocity		: REAL := 10;			//Slow Velocity Value of Move
+	Acceleration		: REAL := 10000;		//Accleration Value of Move
+	Deceleration		: REAL := 10000;		//Deceleration Value of Move
+	Jerk				: REAL := 10000;		//Jerk Value of Move
+	Timeout				: REAL := 5;			//Time Allowed for Move to Complete
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

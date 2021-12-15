@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="E_CNC_State" Id="{d2b7f4ec-9ddc-496c-b161-2586bf630357}">
+    <Declaration><![CDATA[TYPE E_CNC_State :(
+	DESELECTED		:=  1,
+	SELECTED 		:=  2,
+	READY	 		:=  3,
+	ACTIVE			:=  4,
+	HOLD			:=  5,
+	ERROR			:=  6,
+	SELECTING		:=  7,
+	DESELECTING		:=  8,
+	PREPARING		:=  9,
+	CLEARING		:=  10,
+	STARTING		:=  11,
+	ABORTING		:=  12,
+	STOPPING		:=  13,
+	RESUMING		:=  14,
+	RESETTING		:=  15
+)UDINT;
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

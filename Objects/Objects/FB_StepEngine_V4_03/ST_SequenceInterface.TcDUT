@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_SequenceInterface" Id="{c4e6c8bd-fc3c-421e-ab62-64ae80781aae}">
+    <Declaration><![CDATA[TYPE ST_SequenceInterface :
+STRUCT
+	Held					: BOOL;
+	Stopped					: BOOL;
+	Reset					: BOOL;
+	Suspended				: BOOL;
+	Complete				: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

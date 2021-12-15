@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.6">
+  <POU Name="F_CheckDivReal" Id="{00a4d3fc-2bda-4f08-8d66-495c27276c0e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_CheckDivReal : REAL
+VAR_INPUT
+	divisor: REAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF divisor = 0 THEN
+	F_CheckDivReal:=1;
+ELSE
+	F_CheckDivReal:=divisor;
+END_IF;
+]]></ST>
+    </Implementation>
+    <LineIds Name="F_CheckDivReal">
+      <LineId Id="20" Count="0" />
+      <LineId Id="22" Count="2" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

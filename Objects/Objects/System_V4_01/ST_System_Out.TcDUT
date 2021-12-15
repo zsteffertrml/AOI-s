@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_System_Out" Id="{0298bacc-f1b6-468b-8a17-2b43c114e7ca}">
+    <Declaration><![CDATA[TYPE ST_System_Out :
+STRUCT
+	Energized				AT %Q*	: BOOL;					//System energized
+	Energized_T1					: BOOL;					//Pneumatic soft start complete
+	Energized_T2					: BOOL;					//Drives power up complete
+	SafetyCellBreach				: BOOL;					//Safety cell has been breached in production state
+	Alert							: BOOL;					//Machine alert active
+	Alarm							: BOOL;					//Machine has an alarm active
+	Warning							: BOOL;					//Machine has a warning active
+	Home_EN							: BOOL;					//Machine homing is enabled
+	SimulationActive				: BOOL;					//Machine simulation is active
+	Energized_ET					: REAL;					//Time the system has been energized
+	DeEnergized_ET					: REAL;					//Time the system has been de-energized	
+	AlarmMessage					: STRING;				//Active Alarm Message
+	WarningMessage					: STRING;				//Active Warning Message
+	InfoMessage						: STRING;				//Active Information Message
+	StatusMessage					: STRING;				//Used to display machine status on HMI
+	AlertMessage					: STRING;				//Used to display alert on HMI
+	RecipeSaved						: BOOL;					//Recipe Saved
+	RecipeLoaded					: BOOL;					//Recipe Loaded
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

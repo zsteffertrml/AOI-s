@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_PMLAdmin" Id="{bae7bb11-0e85-4053-ab64-86fe633f339b}">
+    <Declaration><![CDATA[TYPE ST_PMLAdmin :
+STRUCT
+	ModeCurrentTime				: ARRAY[0..7] OF DINT;				//Time spent in Mode
+	ModeCummulativeTime			: ARRAY[0..7] OF DINT;				//Cumulative Time In Each Mode
+	StateCurrentTime			: ARRAY[0..7,0..17] OF DINT;		//Value of last State Timer in each [mode].State[#]
+	StateCummulativeTime		: ARRAY[0..7,0..17] OF DINT;		//Cumulative Time In Each [mode].State[#]
+	ProdProcessed				: DINT;								//Number Products Processed
+	DefectProd					: DINT;								//Number Defective Products
+	StopReason					: DINT;								//The stop reason is the first event captured during an abort, held, suspended or stop event.
+	ReworkProd					: DINT;								//Number Re-workable Products
+	ResetTimerCounters			: BOOL;								//Reset timers and counters
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

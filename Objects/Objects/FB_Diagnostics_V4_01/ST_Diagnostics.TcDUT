@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_Diagnostics" Id="{62097ba8-3fdb-42cc-b2f3-035d1652ccbc}">
+    <Declaration><![CDATA[TYPE ST_Diagnostics :
+STRUCT
+	Name					: STRING;
+	ProductType				: STRING;
+	CRCError				: DWORD;
+	Address					: WORD;
+	LinkStatus				: STRING;
+	DeviceStatus			: STRING;
+	NetId					: T_AmsNetId;
+	LostFrames     			: UDINT;
+	FramesPerSecond        	: LREAL;
+	LostQueuedFrames      	: UDINT;
+	QueuedFramesPerSecond 	: LREAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

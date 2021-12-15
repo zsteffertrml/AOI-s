@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_MachineInfo" Id="{378bffd0-be4c-44b9-af66-722f0b9499f2}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_MachineInfo
+VAR_INPUT 
+	Trigger				: BOOL;
+	RemoveRouteName		: STRING;
+	RemoveRoute			: BOOL;
+END_VAR
+VAR_OUTPUT
+	Adapters 			: ARRAY[0..MAX_LOCAL_ADAPTERS] OF ST_IpAdapterInfo;
+	Licenses   			: ARRAY[1..nMaxLicenses] OF ST_TcOnlineLicenseInfoData;
+	Routes				: ARRAY[0..15] OF ST_AmsRouteEntry;
+END_VAR
+VAR PERSISTENT
+	NetworkDevices 		: ARRAY[0..15] OF ST_IpAdapterInfo;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[M_CPU();
+]]></ST>
+    </Implementation>
+    <Method Name="M_CPU" Id="{a4f384af-9b7e-40c5-a9ac-7afcfe0bf912}">
+      <Declaration><![CDATA[METHOD M_CPU
+VAR_STAT
+	_GetAdaptersInfo	: FB_GetAdaptersInfo;
+	_GetLicenses		: FB_GetLicenses;
+	_EnumRouteEntry		: FB_EnumRouteEntry;
+	_RemoveRouteEntry 	: FB_RemoveRouteEntry;
+	_incrementer		: INT;
+	_x					: INT;
+	_y					: INT;
+	_step				: INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE _step OF
+	0 :
+		_GetAdaptersInfo.bExecute := FALSE;
+		_GetLicenses.bExecute := FALSE;
+		_EnumRouteEntry.bExecute := FALSE;
+		_EnumRouteEntry.eCmd := eEnumCmd_First;
+		_RemoveRouteEntry.bExecute := FALSE;
+		_incrementer:=0;
+		Trigger:=FALSE;
+		_step:=_step+1;
+
+	1 :
+		_EnumRouteEntry.bExecute := TRUE;
+		IF _EnumRouteEntry.bBusy THEN
+		_step:=_step+1; END_IF
+	
+	2 :
+		_EnumRouteEntry.bExecute := FALSE;
+		IF NOT _EnumRouteEntry.bBusy THEN
+		_step:=_step+1; END_IF
+	
+	3 :
+		IF _EnumRouteEntry.bEOE THEN
+			_step:=_step+1; 
+			FOR _incrementer := _incrementer TO 15 BY 1 DO
+				Routes[_incrementer].dwFlags:=0;
+				Routes[_incrementer].eTransport:=0;
+				Routes[_incrementer].sAddress:='';
+				Routes[_incrementer].sName:='';
+				Routes[_incrementer].sNetID:='';
+				Routes[_incrementer].tTimeout:=T#0S;
+			END_FOR
+		ELSE
+			Routes[_incrementer]:= _EnumRouteEntry.stRoute;
+			_incrementer := _incrementer + 1;
+			_EnumRouteEntry.eCmd := eEnumCmd_Next;
+			_step:=1;
+		END_IF
+		
+	4 :
+		_GetAdaptersInfo.bExecute := TRUE;
+		IF _GetAdaptersInfo.bBusy THEN
+		_step:=_step+1; END_IF
+			
+	5 :
+		_GetAdaptersInfo.bExecute := FALSE;
+		IF NOT _GetAdaptersInfo.bBusy THEN
+		_step:=_step+1; END_IF
+				
+	6 :
+		_GetLicenses.bExecute := TRUE;
+		IF _GetLicenses.bBusy THEN
+		_step:=_step+1; END_IF
+				
+	7 :
+		_GetLicenses.bExecute := FALSE;
+		IF NOT _GetLicenses.bBusy THEN
+		_step:=_step+1; END_IF
+		
+	8 :
+		Adapters := _GetAdaptersInfo.arrAdapters;
+		IF _GetLicenses.nValidLicenses > 0 THEN
+			FOR _incrementer := 1 TO UDINT_TO_INT(_GetLicenses.nValidLicenses) DO
+				Licenses[_incrementer] := _GetLicenses.aValidLicenses[_incrementer];
+			END_FOR
+		END_IF
+		IF _GetLicenses.nInvalidLicenses > 0 THEN
+			FOR _incrementer := UDINT_TO_INT(_GetLicenses.nValidLicenses+1) TO UDINT_TO_INT(_GetLicenses.nValidLicenses + _GetLicenses.nInvalidLicenses) DO
+				Licenses[_incrementer] := _GetLicenses.aInvalidLicenses[_incrementer-UDINT_TO_INT(_GetLicenses.nInvalidLicenses)];
+			END_FOR
+		END_IF
+		_step:=_step+1;
+		
+	9 :
+		IF Trigger THEN _step:=0; END_IF
+		IF RemoveRoute THEN _step:=_step+1; END_IF
+		
+	10:
+		_RemoveRouteEntry.sName := RemoveRouteName;
+		_RemoveRouteEntry.bExecute := TRUE;
+		IF _RemoveRouteEntry.bBusy THEN
+		_step:=_step+1; END_IF
+			
+	11:
+		_RemoveRouteEntry.bExecute := FALSE;
+		IF NOT _RemoveRouteEntry.bBusy THEN
+		RemoveRoute := FALSE;
+		_step:=0; END_IF
+		
+ELSE
+	_step:=0;
+END_CASE
+
+_GetAdaptersInfo();
+_GetLicenses();
+_EnumRouteEntry();
+_RemoveRouteEntry();]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_MachineInfo">
+      <LineId Id="623" Count="0" />
+      <LineId Id="709" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_MachineInfo.M_CPU">
+      <LineId Id="52" Count="1" />
+      <LineId Id="279" Count="1" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="406" Count="0" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="417" Count="0" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="61" Count="1" />
+      <LineId Id="371" Count="2" />
+      <LineId Id="67" Count="1" />
+      <LineId Id="374" Count="2" />
+      <LineId Id="73" Count="1" />
+      <LineId Id="380" Count="0" />
+      <LineId Id="382" Count="0" />
+      <LineId Id="409" Count="1" />
+      <LineId Id="412" Count="4" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="407" Count="0" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="387" Count="0" />
+      <LineId Id="386" Count="0" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="408" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="312" Count="2" />
+      <LineId Id="325" Count="0" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="318" Count="2" />
+      <LineId Id="324" Count="0" />
+      <LineId Id="309" Count="0" />
+      <LineId Id="315" Count="2" />
+      <LineId Id="326" Count="0" />
+      <LineId Id="310" Count="0" />
+      <LineId Id="321" Count="2" />
+      <LineId Id="311" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="346" Count="0" />
+      <LineId Id="334" Count="0" />
+      <LineId Id="337" Count="0" />
+      <LineId Id="339" Count="1" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="341" Count="3" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="419" Count="0" />
+      <LineId Id="390" Count="3" />
+      <LineId Id="405" Count="0" />
+      <LineId Id="394" Count="3" />
+      <LineId Id="399" Count="2" />
+      <LineId Id="404" Count="0" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="180" Count="1" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="306" Count="0" />
+      <LineId Id="301" Count="1" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="388" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

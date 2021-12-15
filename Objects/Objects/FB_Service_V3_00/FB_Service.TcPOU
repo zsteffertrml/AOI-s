@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_Service" Id="{17d3b045-35b1-4cc7-aad5-40428ea82cb9}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FINAL FB_Service
+VAR_IN_OUT
+	Control				: ST_System;
+END_VAR
+VAR
+	_ServiceDue			: BOOL;//Machine Service Due
+	_Services			: SINT;//Service History Loop
+	_ServiceReset		: BOOL;//Service Reset Selection
+END_VAR
+VAR PERSISTENT
+	_LastBy				: STRING;// Last service done by
+	_LastDate			: TIMESTRUCT;// Last service date
+	_NextDueMonths		: REAL;// Next service due months
+	_NextDueHours		: REAL;// Next service due hours
+	_NextDueDate		: TIMESTRUCT;// Next service due date
+	_IntervalMonths		: REAL := 12;// Service interval months
+	_IntervalHours		: REAL := 20000;// Service interval hours
+	_MachineHours		: REAL;// Service machine hours
+	_HoursRemaining		: REAL;// Service hours remaining
+	_History			: ARRAY[0..9,0..3] OF STRING(31);// Service history
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Update Machine Running Hours
+IF (Control.PackMLState.Execute OR Control.PackMLState.Holding OR Control.PackMLState.UnHolding OR Control.PackMLState.Suspending OR Control.PackMLState.UnSuspending) AND Control.SystemTime.SecondPulse THEN
+	// Increment machine running hours
+	_MachineHours := _MachineHours + (1.00/3600.00);
+	// Update Hours remaining until next service
+	IF (_MachineHours < _NextDueHours) THEN _HoursRemaining := (_NextDueHours - _MachineHours); END_IF
+	IF (_MachineHours >= _NextDueHours) THEN _HoursRemaining := 0; END_IF
+
+END_IF
+
+// Check If A Service Is Due
+_ServiceDue := (_MachineHours > _NextDueHours) OR ((Control.SystemTime.CurrentTime.wYear >= _NextDueDate.wYear) AND (Control.SystemTime.CurrentTime.wMonth >= _NextDueDate.wMonth) AND (Control.SystemTime.CurrentTime.wDay >= _NextDueDate.wDay));
+
+// Service Reset
+IF _ServiceReset THEN
+	// Update last service date
+	_LastDate := Control.SystemTime.CurrentTime;
+	
+	// Update next service hours
+	_NextDueHours := _MachineHours + _IntervalHours;
+	_HoursRemaining := _NextDueHours - _MachineHours;
+	
+	// Calculate the next service due date
+	_NextDueDate.wDay := Control.SystemTime.CurrentTime.wDay;
+	_NextDueDate.wMonth := Control.SystemTime.CurrentTime.wMonth + REAL_TO_WORD(_IntervalMonths);
+	_NextDueDate.wYear := Control.SystemTime.CurrentTime.wYear;
+	
+	// Check month overflow
+	WHILE _NextDueDate.wMonth > 12 DO 
+		_NextDueDate.wMonth := _NextDueDate.wMonth - 12;
+		_NextDueDate.wYear := Control.SystemTime.CurrentTime.wYear + 1;
+	END_WHILE
+	
+	//Service History
+	FOR _Services :=8 TO 0 BY -1 DO
+		_History[_Services+1,0] := _History[_Services,0];
+		_History[_Services+1,1] := _History[_Services,1];
+		_History[_Services+1,2] := _History[_Services,2];
+		_History[_Services+1,3] := _History[_Services,3];
+	END_FOR;
+	_History[0,0] := _LastBy;
+	_History[0,1] := TO_STRING(_MachineHours);
+	_History[0,2] := SYSTEMTIME_TO_STRING(_LastDate);
+	_History[0,3] := SYSTEMTIME_TO_STRING(_NextDueDate);
+	_ServiceReset := FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Service">
+      <LineId Id="27" Count="3" />
+      <LineId Id="32" Count="40" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

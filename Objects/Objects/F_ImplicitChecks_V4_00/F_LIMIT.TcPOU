@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.6">
+  <POU Name="F_LIMIT" Id="{75ba2409-0d37-4166-b972-c727bfac775e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_LIMIT : BOOL
+VAR_INPUT
+	En			: BOOL;
+	High		: LREAL;
+	Value		: LREAL;
+	Low			: LREAL;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF En = TRUE AND (Low <= High AND
+ (Value >= Low AND Value <= High)) OR
+ (Low >= High AND
+ (Value <= Low OR Value >= High)) THEN
+	F_LIMIT := TRUE;
+ELSE	
+	F_LIMIT := FALSE;
+END_IF;
+]]></ST>
+    </Implementation>
+    <LineIds Name="F_LIMIT">
+      <LineId Id="3" Count="7" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.2">
+  <DUT Name="ST_TimeManagement_SP" Id="{e8f31541-6351-4ef2-af5d-64a3c1f7f964}">
+    <Declaration><![CDATA[TYPE ST_TimeManagement_SP :
+STRUCT
+	TotalUpTime				: ST_ElapsedTime;	//Total up time of System
+	PreviousDay				: INT;				//Previous day, used for midnight pulse
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

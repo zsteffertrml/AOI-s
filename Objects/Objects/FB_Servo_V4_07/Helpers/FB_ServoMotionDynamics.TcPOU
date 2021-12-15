@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <POU Name="FB_ServoMotionDynamics" Id="{e6585bf1-bf09-446e-bd26-938f69021292}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FINAL FB_ServoMotionDynamics
+VAR_INPUT
+	ExecuteMove					: BOOL;				
+END_VAR
+VAR_IN_OUT
+	Axis						: AXIS_REF;		
+	CMD_Power					: MC_POWER;	
+	BufferMode					: MC_BUFFERMODE;		
+	PosMove1					: ST_MovePosition_SP;	
+	CMD_MovePosAbs1				: MC_MOVEABSOLUTE;
+	PosMove2					: ST_MovePosition_SP;	
+	CMD_MovePosAbs2				: MC_MOVEABSOLUTE;
+END_VAR
+VAR
+	_Reset						: MC_Reset;		
+	_State						: E_MoveState;			
+	_r_Trig						: R_TRIG;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//************************************************
+//					CONTROL
+//************************************************		
+
+(* update the axis status at the beginning of each cycle *)
+	Axis.ReadStatus();
+	
+	_r_Trig(CLK:= ExecuteMove);
+	
+	IF _r_Trig.Q THEN
+		_State := MOVESTATE_ENABLE;
+	END_IF
+
+	(* move axis using a state machine *)
+	CASE _State OF
+		
+		MOVESTATE_INIT :	(* initialisation *)
+			(* initialize all function blocks *)
+			CMD_MovePosAbs1.Execute := FALSE;
+			CMD_MovePosAbs2.Execute := FALSE;
+			_Reset.Execute := FALSE;
+
+		MOVESTATE_ENABLE :
+
+			IF CMD_Power.Status THEN
+				_State := MOVESTATE_FORWARD;
+			ELSIF CMD_Power.Error THEN
+				_State := MOVESTATE_ERROR;
+			END_IF
+
+		MOVESTATE_FORWARD :		(* start to first position *)
+			CMD_MovePosAbs1.BufferMode := MC_Buffered;
+			CMD_MovePosAbs1.Execute := TRUE;
+			IF CMD_MovePosAbs1.Active  THEN
+				(* axis is executing job but is not yet finished *)
+				CMD_MovePosAbs1.Execute := FALSE;
+				(* leave this state and buffer a second command *)
+				_State := MOVESTATE_NEWTARGETPOSITION;
+			ELSIF CMD_MovePosAbs1.CommandAborted OR CMD_MovePosAbs1.Error THEN
+				_State := MOVESTATE_ERROR;
+			END_IF
+			
+		MOVESTATE_NEWTARGETPOSITION :(* change target position while moving *)
+			CMD_MovePosAbs2.BufferMode := BufferMode; 	(* use velocity of previous command till intermediate target position position *)
+			CMD_MovePosAbs2.Execute := TRUE;
+			IF CMD_MovePosAbs2.Done THEN
+				CMD_MovePosAbs2.Execute := FALSE;
+				_State := MOVESTATE_INIT;
+			ELSIF CMD_MovePosAbs2.CommandAborted OR CMD_MovePosAbs2.Error THEN
+				_State := MOVESTATE_ERROR;
+			END_IF
+
+		MOVESTATE_ERROR :
+			IF Axis.Status.Error THEN
+				_State := MOVESTATE_RESET;	(* axis error requires reset *)
+			ELSE
+				_State := MOVESTATE_INIT;		(* function block errors don't need a reset *)
+			END_IF
+
+		MOVESTATE_RESET :
+			_Reset.Execute := TRUE;
+			IF _Reset.Done THEN
+				_State := MOVESTATE_INIT;
+			ELSIF _Reset.Error THEN
+				_State := MOVESTATE_INIT; (* can't do anything here *)
+			END_IF
+
+	END_CASE
+//************************************************
+//					OUTPUTS
+//************************************************	
+	
+_Reset(
+	Axis:= Axis, 
+	Execute:= , 
+	Done=> , 
+	Busy=> , 
+	Error=> , 
+	ErrorID=> );
+	
+CMD_MovePosAbs1(
+	Axis:= Axis, 
+	Execute:= , 
+	Position:= PosMove1.Position, 
+	Velocity:= PosMove1.Velocity, 
+	Acceleration:= PosMove1.Acceleration, 
+	Deceleration:= PosMove1.Deceleration, 
+	Jerk:= PosMove1.Jerk, 
+	BufferMode:= , 
+	Options:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=> , 
+	ErrorID=> );
+	
+CMD_MovePosAbs2(
+	Axis:= Axis, 
+	Execute:= , 
+	Position:= PosMove2.Position, 
+	Velocity:= PosMove2.Velocity, 
+	Acceleration:= PosMove2.Acceleration, 
+	Deceleration:= PosMove2.Deceleration, 
+	Jerk:= PosMove2.Jerk, 
+	BufferMode:= , 
+	Options:= , 
+	Done=> , 
+	Busy=> , 
+	Active=> , 
+	CommandAborted=> , 
+	Error=> , 
+	ErrorID=> );	
+	]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ServoMotionDynamics">
+      <LineId Id="151" Count="1" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="4" Count="62" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="106" Count="1" />
+      <LineId Id="95" Count="1" />
+      <LineId Id="109" Count="4" />
+      <LineId Id="97" Count="1" />
+      <LineId Id="114" Count="14" />
+      <LineId Id="99" Count="1" />
+      <LineId Id="129" Count="14" />
+      <LineId Id="102" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.3">
+  <DUT Name="ST_ConstantVelocity_SP" Id="{bac03cc6-4f19-4eaa-baee-c9766b4f24d8}">
+    <Declaration><![CDATA[TYPE ST_ConstantVelocity_SP :
+STRUCT
+	Direction			: MC_Direction;			//Direction of Constant Move
+	Velocity			: REAL := 50;			//Velocity Value of Move
+	Acceleration		: REAL := 1;			//Accleration Value of Move
+	Deceleration		: REAL := 1;			//Deceleration Value of Move
+	Jerk				: REAL :=25;			//Jerk Value of Move
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
