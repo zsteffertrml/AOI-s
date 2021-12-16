@@ -108,6 +108,7 @@ IF CNCSystem.bHLIInit THEN
 	M_Homing(_Chan:= _SelectedChannel);
 
   //Mod from Local
+  //Mod on local pre pull
 END_IF]]></ST>
     </Implementation>
     <Property Name="Alarm" Id="{359f4eee-d9a0-4521-962e-f7d57982a541}">
